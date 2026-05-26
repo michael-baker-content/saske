@@ -59,26 +59,75 @@
     {
       "name": "+1 Striking Shortbow",
       "attack": 17,
-      "damage": "2d6 P",
+      "damage_str": "2d6+3 P",
       "traits": [
         "Deadly d10",
         "Range 60 ft.",
         "Reload 0"
       ],
-      "note": "+1d8 precision on 1st hit vs Hunted Prey",
-      "note_type": "good"
+      "damage_rolls": [
+        {
+          "dice": 2,
+          "faces": 6,
+          "type": "P",
+          "category": "weapon",
+          "label": "2d6"
+        }
+      ],
+      "damage_bonus": 3,
+      "damage_bonus_label": "+1 item, +2 spec",
+      "crit_additions": [
+        {
+          "dice": 1,
+          "faces": 10,
+          "type": "P",
+          "category": "deadly",
+          "label": "Deadly d10"
+        }
+      ]
     },
     {
       "name": "+1 Striking Shortsword",
       "attack": 17,
-      "damage": "2d6 P/S",
+      "damage_str": "2d6+3 P/S",
       "traits": [
         "Agile",
         "Finesse",
         "Versatile S"
       ],
-      "note": "MAP \u22124/\u22128 \u00b7 vs Prey \u22123/\u22126",
-      "note_type": "neutral"
+      "note": "MAP \u22124/\u22128",
+      "note_type": "neutral",
+      "damage_rolls": [
+        {
+          "dice": 2,
+          "faces": 6,
+          "type": "P/S",
+          "category": "weapon",
+          "label": "2d6"
+        }
+      ],
+      "damage_bonus": 3,
+      "damage_bonus_label": "+1 item, +2 spec"
+    },
+    {
+      "name": "+1 Striking Sling",
+      "attack": 17,
+      "damage_str": "2d6+3 B",
+      "traits": [
+        "Propulsive",
+        "Reload 1"
+      ],
+      "damage_rolls": [
+        {
+          "dice": 2,
+          "faces": 6,
+          "type": "B",
+          "category": "weapon",
+          "label": "2d6"
+        }
+      ],
+      "damage_bonus": 3,
+      "damage_bonus_label": "+1 item, +2 spec"
     }
   ],
   "skills": [
@@ -134,8 +183,9 @@
     },
     {
       "name": "Acrobatics",
-      "modifier": 13,
+      "modifier": 14,
       "proficiency": "Trained",
+      "item_bonus": 1,
       "key_attribute": "dex"
     },
     {
@@ -225,6 +275,16 @@
         "success_heal": "2d8+40",
         "crit_heal": "4d8+40",
         "notes": "Treat Wounds tier +30, Medic Ded. +10"
+      },
+      {
+        "proficiency": "Legendary",
+        "dc": 40,
+        "base_success_heal": "2d8+50",
+        "base_crit_heal": "4d8+50",
+        "medic_ded_bonus": 15,
+        "success_heal": "2d8+65",
+        "crit_heal": "4d8+65",
+        "notes": "Treat Wounds tier +50, Medic Ded. +15"
       }
     ],
     "assurance_result": 24,
@@ -234,8 +294,8 @@
     "max_targets": 4,
     "treat_wounds_time": "10 min (Continual Recovery)",
     "notes": [
-      "Robust Health: +8 HP when you are the target",
-      "Medic Ded. circumstance bonus stacks with tier bonus"
+      "Robust Health: +8 HP circ. bonus when you are the target",
+      "Medic Ded. circ. bonus doesn't stack"
     ],
     "dc": 20,
     "success_heal": "2d8+15",
@@ -327,45 +387,193 @@
   "inventory": [
     {
       "name": "+1 Striking Shortbow",
-      "bulk": "1"
+      "bulk": "1",
+      "ammo": false,
+      "notes": "Crit spec: immobilized",
+      "quantity": 1
     },
     {
       "name": "+1 Striking Shortsword",
-      "bulk": "L"
+      "bulk": "L",
+      "ammo": false,
+      "notes": "Crit spec: off-guard",
+      "quantity": 1
+    },
+    {
+      "name": "+1 Striking Sling",
+      "bulk": "-",
+      "ammo": false,
+      "notes": "Crit spec: stunned",
+      "quantity": 1
+    },
+    {
+      "name": "+1 Nightstick",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "Crit spec: forced movement",
+      "quantity": 1
     },
     {
       "name": "+1 Leather Armor",
-      "bulk": "1"
+      "bulk": "1",
+      "ammo": false,
+      "notes": "+2 item bonus to armor class",
+      "quantity": 1
     },
     {
-      "name": "Expanded Healer's Toolkit",
+      "name": "Buckler",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+1 AC, 3 Hard, BT 6 (3)",
+      "quantity": 1
+    },
+    {
+      "name": "Bracers of Missile Deflection",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+2 circumstance bonus (1/day)",
+      "quantity": 1
+    },
+    {
+      "name": "Barding (Heavy)",
+      "bulk": "3",
+      "ammo": false,
+      "notes": "equipped by Haki",
+      "quantity": 1
+    },
+    {
+      "name": "Healer's Toolkit",
       "bulk": "1",
-      "note": "+1 item bonus to Medicine"
+      "ammo": false,
+      "notes": "required for most Med skills",
+      "quantity": 1
     },
     {
       "name": "Healer's Gloves",
-      "bulk": "L"
-    },
-    {
-      "name": "Heavy Barding (Haki)",
-      "bulk": "3"
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+1 item bonus to Medicine",
+      "quantity": 1
     },
     {
       "name": "Thieves' Toolkit (Infiltrator)",
-      "bulk": "L"
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+1 item bonus to Pick Locks and Disable Devices",
+      "quantity": 1
+    },
+    {
+      "name": "Replacement Pick",
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "Fix thieves' toolkit without an action",
+      "quantity": 6
     },
     {
       "name": "Bracelet of Dashing",
-      "bulk": "L"
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+1 item bonus to Acrobatics; spell",
+      "quantity": 1
     },
     {
       "name": "Obsidian Goggles",
-      "bulk": "\u2014"
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "+1 item bonus to sight Perception; spell",
+      "quantity": 1
+    },
+    {
+      "name": "Necklace of Frozen Lava",
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "1 big + 1 small attack left",
+      "quantity": 1
+    },
+    {
+      "name": "Skeleton Key",
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "+4 status bonus spell to open door / etc.",
+      "quantity": 1
+    },
+    {
+      "name": "Feather Step Stone",
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "equipped: ignore terrain 1 turn",
+      "quantity": 1
+    },
+    {
+      "name": "Emerald Grasshopper",
+      "bulk": "\u2014",
+      "ammo": false,
+      "notes": "Allows fancy leap action",
+      "quantity": 1
+    },
+    {
+      "name": "Adventurer's Pack",
+      "bulk": "1",
+      "ammo": false,
+      "quantity": 1
+    },
+    {
+      "name": "Healing Potion (minor)",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "restores 1d8 hp",
+      "quantity": 1
+    },
+    {
+      "name": "Healing Potion (moderate)",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "restores 3d8+10 hp",
+      "quantity": 1
+    },
+    {
+      "name": "Holy Water",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "1d6 spirit dmg + 1 spirit splash dmg",
+      "quantity": 5
+    },
+    {
+      "name": "Antidote (lesser)",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+2 item bonus vs poisons (6hrs)",
+      "quantity": 2
+    },
+    {
+      "name": "Darkvision Elixir (moderate)",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "1 hour",
+      "quantity": 2
+    },
+    {
+      "name": "Ghost Charge (moderate)",
+      "bulk": "L",
+      "ammo": false,
+      "notes": "+1 item,  2d8 vit. dmg / 2 splash, enfeebled",
+      "quantity": 1
     },
     {
       "name": "Arrows",
       "bulk": "L",
-      "quantity": 40
+      "ammo": true,
+      "notes": "32 remaining",
+      "quantity": 4,
+      "ammoPerBundle": 10
+    },
+    {
+      "name": "Sling Bullets",
+      "bulk": "L",
+      "quantity": 1,
+      "notes": "8 remaining",
+      "ammo": true,
+      "ammoPerBundle": 10
     }
   ],
   "companion": {
@@ -397,7 +605,20 @@
           "Finesse"
         ],
         "attack": 14,
-        "damage": "2d6+3 P"
+        "damage_str": "2d6+3 P",
+        "damage_rolls": [
+          {
+            "dice": 2,
+            "faces": 6,
+            "type": "P",
+            "category": "weapon",
+            "label": "2d6"
+          }
+        ],
+        "ability_mod": {
+          "stat": "str",
+          "label": "STR"
+        }
       },
       {
         "name": "Talon",
@@ -406,7 +627,20 @@
           "Finesse"
         ],
         "attack": 14,
-        "damage": "2d4+3 S"
+        "damage_str": "2d4+3 S",
+        "damage_rolls": [
+          {
+            "dice": 2,
+            "faces": 4,
+            "type": "S",
+            "category": "weapon",
+            "label": "2d4"
+          }
+        ],
+        "ability_mod": {
+          "stat": "str",
+          "label": "STR"
+        }
       }
     ],
     "abilities": [

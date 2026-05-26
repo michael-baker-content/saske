@@ -309,34 +309,23 @@
 
 /* ── Medicine tool row labels ── */
 .med-section-label {
-  font-size: 10px; font-weight: 600; color: var(--text3);
-  letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
 }
 .med-section-sub {
   font-size: 10px; font-weight: 400; text-transform: none;
   letter-spacing: 0; color: var(--text3);
 }
 
-/* ── Medicine dice grid ── */
+/* ── Medicine dice grid (reuses attack modal cell styles) ── */
 #med-dice-area {
-  margin: 2px 0 4px;
-}
-#med-dice-label {
-  margin-bottom: 6px;
+  margin: 4px 0 6px;
 }
 .med-dice-cell-grid {
   display: grid;
-  grid-template-columns: repeat(2, 64px);
-  gap: 8px 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px 4px;
   align-items: start;
-  width: fit-content;
-}
-/* Inputs inside med dice grid use same width as modal inputs */
-.med-dice-cell-grid .modal-die-group .modal-input {
-  width: 64px;
-}
-.med-dice-cell-grid .modal-flat-bonus {
-  width: 64px;
 }
 
 /* ── Apply + Confirm row ── */
@@ -344,23 +333,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .med-action-row .med-calc-btn { flex: 1; }
 .med-action-row .med-tier-btn { flex: 0 0 auto; }
-
-/* Apply button — highlighted amber when dice are waiting to be entered */
-#med-apply-btn {
-  border-color: var(--amber); color: var(--amber);
-  background: rgba(240,164,48,0.12);
-  font-weight: 700;
-}
-#med-apply-btn:active { background: rgba(240,164,48,0.25); }
-
-/* Disabled state for buttons */
-.med-tier-btn:disabled,
-.med-calc-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  pointer-events: none;
-}

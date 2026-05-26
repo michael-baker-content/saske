@@ -2,24 +2,20 @@
 // MODAL — attack roll modal
 // ════════════════════════════════════════════
 
-// ════════════════════════════════════════════
-// ATTACK MODAL
-// ════════════════════════════════════════════
-let modalWeapon = null;    // current weapon object
-let modalSource = null;    // 'player' | 'companion'
-let currentMAP  = 0;       // 0 = 1st, -1 = 2nd, -2 = 3rd+
+let modalWeapon = null;
+let modalSource = null;
+let currentMAP  = 0;
+let modalIsCrit = false;
 
-// Parse a damage string like "2d6 P" or "2d4+3 S" into parts
 function openModal(idx, source) {
   const weapon = source === 'player' ? C.weapons[idx] : C.companion.attacks[idx];
   modalWeapon = weapon;
   modalSource = source;
   currentMAP  = 0;
+  modalIsCrit = false;
 
-  // Header
   document.getElementById('modal-weapon-name').textContent = weapon.name;
 
-  // Attack modifier — apply active condition penalties
   const condPen = source === 'player'
     ? (S._condPenalties?.atk || 0)
     : (S._hakiCondPenalties?.atk || 0);
@@ -28,62 +24,132 @@ function openModal(idx, source) {
   document.getElementById('modal-d20').value = '';
   document.getElementById('modal-atk-total').value = '';
 
-  // MAP buttons — show agile penalties if weapon has Agile trait
   const isAgile = weapon.traits?.some(t => t.toLowerCase().includes('agile'));
-  const map2 = document.getElementById('map-btn-2');
-  map2.textContent = isAgile ? '2nd attack (−4)' : '2nd attack (−5)';
+  document.getElementById('map-btn-2').textContent = isAgile ? 'Second (\u22124)' : 'Second (\u22125)';
+  document.getElementById('map-btn-3').textContent = isAgile ? 'Third (\u22128)' : 'Third (\u221210)';
 
-  // Reset MAP selection
   document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.map-btn').classList.add('active');
+  document.getElementById('crit-toggle-btn')?.classList.remove('active');
 
-  // Prey toggle row — shown for player AND companion weapons when prey is active
-  // (Companion benefits from Warden's Boon sharing Precision)
   const hasPrey = !!S.prey;
-  const preyRow = document.getElementById('prey-bonus-row');
-  preyRow.style.display = hasPrey ? 'block' : 'none';
+  document.getElementById('prey-bonus-row').style.display = hasPrey ? 'block' : 'none';
   if (hasPrey) {
-    document.getElementById('prey-bonus-label').textContent = '🎯 ' + S.prey;
-    // Default toggle ON (most common case is attacking your prey)
-    const tog = document.getElementById('prey-tog');
-    tog.classList.add('on');
+    document.getElementById('prey-bonus-label').textContent = '\uD83C\uDFAF ' + S.prey;
+    document.getElementById('prey-tog').classList.add('on');
   }
-  // Precision die row visibility driven by toggle state
+  // Precision row is now folded into buildDamageInputs — hide the static one
   const precRow = document.getElementById('precision-row');
-  precRow.style.display = hasPrey ? 'flex' : 'none';
-  document.getElementById('modal-precision-die').value = '';
+  if (precRow) precRow.style.display = 'none';
 
-  // Build damage inputs
-  const dmgParts = parseDamage(weapon.damage);
-  const inputsEl = document.getElementById('modal-dmg-inputs');
-  inputsEl.innerHTML = dmgParts.map((p, i) => `
-    <div>
-      <div class="modal-input-label" style="margin-bottom:3px">${p.count}d${p.sides}${p.bonus !== 0 ? (p.bonus > 0 ? '+'+p.bonus : p.bonus) : ''}</div>
-      <input class="modal-input" type="number" id="modal-dmg-${i}" placeholder="—" min="${p.count}" max="${p.count * p.sides}"
-        data-count="${p.count}" data-sides="${p.sides}" data-bonus="${p.bonus}"/>
-    </div>
-  `).join('<div style="font-size:20px;color:var(--text3);align-self:flex-end;padding-bottom:8px">+</div>');
+  buildDamageInputs(false);
 
-  // Hide results
   document.getElementById('result-grid').style.display = 'none';
-
-  // Open
   document.getElementById('atk-modal-backdrop').classList.add('open');
-
-  // Focus d20
   setTimeout(() => document.getElementById('modal-d20').focus(), 80);
 }
 
-function togglePreyAttack() {
-  const tog = document.getElementById('prey-tog');
-  const isOn = tog.classList.toggle('on');
-  // Show/hide the precision die input
-  document.getElementById('precision-row').style.display = isOn ? 'flex' : 'none';
-  if (!isOn) document.getElementById('modal-precision-die').value = '';
-  // Clear results when toggling so stale numbers aren't shown
+// ── Build damage grid ───────────────────────────────────────────────
+// Each cell: label (die notation) / sublabel (type or note) / input or flat value
+function buildDamageInputs(isCrit) {
+  const weapon   = modalWeapon;
+  if (!weapon) return;
+
+  const rolls    = weapon.damage_rolls || parseDamageToRolls(weapon.damage);
+  const bonus    = weapon.damage_bonus || 0;
+  const abilMod  = weapon.ability_mod;
+  const crits    = weapon.crit_additions || [];
+  const inputsEl = document.getElementById('modal-dmg-inputs');
+
+  let abilVal = 0;
+  if (abilMod) {
+    const attrs = modalSource === 'companion' ? C.companion.attributes : C.attributes;
+    abilVal = attrs[abilMod.stat] ?? 0;
+    if (abilMod.divisor) abilVal = Math.floor(abilVal / abilMod.divisor);
+  }
+
+  const critMult   = isCrit ? 2 : 1;
+  const totalBonus = (bonus + abilVal) * critMult;
+  let html = '';
+
+  // Weapon dice cells — input first, label below
+  rolls.forEach((roll, i) => {
+    const dc = roll.dice * critMult;
+    html += '<div class="modal-die-group">'
+          + '<input class="modal-input" type="number" id="modal-dmg-' + i + '" '
+          +   'placeholder="\u2014" min="1" max="' + roll.faces + '" '
+          +   'data-count="' + dc + '" data-faces="' + roll.faces + '" '
+          +   'data-type="' + roll.type + '" data-category="' + roll.category + '"/>'
+          + '<div class="modal-die-sublabel">' + dc + 'd' + roll.faces + ' ' + roll.type + '</div>'
+          + '</div>';
+  });
+
+  // Flat bonus cell — display first, label below (no redundant number in label)
+  if (totalBonus !== 0) {
+    const bonusSub = isCrit
+      ? '\xd72(base ' + (rolls[0]?.type || '') + ')'
+      : 'base ' + (rolls[0]?.type || '');
+    html += '<div class="modal-die-group">'
+          + '<div class="modal-flat-bonus" id="modal-flat-bonus">' + (totalBonus > 0 ? '+' : '') + totalBonus + '</div>'
+          + '<div class="modal-die-sublabel">' + bonusSub + '</div>'
+          + '</div>';
+  }
+
+  // Crit addition cells — input first, two-line label below
+  if (isCrit && crits.length) {
+    crits.forEach((crit, ci) => {
+      html += '<div class="modal-die-group">'
+            + '<input class="modal-input" type="number" id="modal-crit-' + ci + '" '
+            +   'placeholder="\u2014" min="1" max="' + crit.faces + '" '
+            +   'data-count="' + crit.dice + '" data-faces="' + crit.faces + '" '
+            +   'data-type="' + crit.type + '" data-category="' + crit.category + '"/>'
+            + '<div class="modal-die-sublabel crit-label">' + crit.dice + 'd' + crit.faces + ' ' + crit.type + '</div>'
+            + '<div class="modal-die-sublabel crit-label">' + crit.label + '</div>'
+            + '</div>';
+    });
+  }
+
+  // Precision die cell — input first, two-line label below
+  const preyTogOn = document.getElementById('prey-tog')?.classList.contains('on');
+  if (preyTogOn) {
+    const precType = modalWeapon?.damage_rolls?.[0]?.type || 'P';
+    html += '<div class="modal-die-group">'
+          + '<input class="modal-input" type="number" id="modal-precision-die" '
+          +   'placeholder="\u2014" min="1" max="8"/>'
+          + '<div class="modal-die-sublabel prey-label">1d8 ' + precType + '</div>'
+          + '<div class="modal-die-sublabel prey-label">1st hit vs Prey</div>'
+          + '</div>';
+  }
+
+  inputsEl.innerHTML = html;
+}
+
+// ── Fallback: parse "2d6+3 P" string into damage_rolls ─────────────
+function parseDamageToRolls(str) {
+  if (!str) return [];
+  const m = str.match(/^(\d+)d(\d+)([+-]\d+)?\s*(\S+)?/);
+  if (!m) return [];
+  return [{ dice: parseInt(m[1]), faces: parseInt(m[2]), type: m[4] || '', category: 'weapon', label: '' }];
+}
+
+// ── Crit toggle ─────────────────────────────────────────────────────
+function toggleCrit() {
+  modalIsCrit = !modalIsCrit;
+  document.getElementById('crit-toggle-btn')?.classList.toggle('active', modalIsCrit);
+  buildDamageInputs(modalIsCrit);
   document.getElementById('result-grid').style.display = 'none';
 }
 
+// ── Prey toggle ─────────────────────────────────────────────────────
+function togglePreyAttack() {
+  const tog = document.getElementById('prey-tog');
+  tog.classList.toggle('on');
+  // Rebuild to add/remove precision cell
+  buildDamageInputs(modalIsCrit);
+  document.getElementById('result-grid').style.display = 'none';
+}
+
+// ── Open / close ────────────────────────────────────────────────────
 function closeModal(e) {
   if (e.target === document.getElementById('atk-modal-backdrop')) closeModalDirect();
 }
@@ -92,16 +158,15 @@ function closeModalDirect() {
   document.getElementById('result-grid').style.display = 'none';
 }
 
+// ── MAP ─────────────────────────────────────────────────────────────
 function setMAP(tier, btn) {
   currentMAP = tier;
   document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Recalculate total if d20 already entered
   updateAtkTotal();
 }
 
 function effectiveMAP() {
-  // tier 0 = 0, tier -1 = -4 agile / -5 normal, tier -2 = -8 agile / -10 normal
   if (currentMAP === 0) return 0;
   const isAgile = modalWeapon?.traits?.some(t => t.toLowerCase().includes('agile'));
   if (currentMAP === -1) return isAgile ? -4 : -5;
@@ -111,70 +176,89 @@ function effectiveMAP() {
 function updateAtkTotal() {
   const d20 = parseInt(document.getElementById('modal-d20').value);
   if (isNaN(d20)) { document.getElementById('modal-atk-total').value = ''; return; }
-  const mod = modalWeapon.attack;
-  const map = effectiveMAP();
-  document.getElementById('modal-atk-total').value = d20 + mod + map;
+  const condPen = modalSource === 'player'
+    ? (S._condPenalties?.atk || 0)
+    : (S._hakiCondPenalties?.atk || 0);
+  const mod = modalWeapon.attack - condPen;
+  document.getElementById('modal-atk-total').value = d20 + mod + effectiveMAP();
 }
 
-// Live-update total as d20 is typed
 document.addEventListener('input', e => {
   if (e.target.id === 'modal-d20') updateAtkTotal();
 });
 
+// ── Calculate results ───────────────────────────────────────────────
 function calcResults() {
   const d20 = parseInt(document.getElementById('modal-d20').value);
   if (isNaN(d20)) { alert('Enter your d20 roll first.'); return; }
 
-  // Attack
-  const mod = modalWeapon.attack;
-  const map = effectiveMAP();
-  const atkTotal = d20 + mod + map;
+  const condPen = modalSource === 'player'
+    ? (S._condPenalties?.atk || 0)
+    : (S._hakiCondPenalties?.atk || 0);
+  const mod = modalWeapon.attack - condPen;
+  const atkTotal = d20 + mod + effectiveMAP();
+  let atkBreak = 'd20(' + d20 + ') + mod(' + (mod >= 0 ? '+' + mod : mod) + ')';
+  if (effectiveMAP() !== 0) atkBreak += ' + MAP(' + effectiveMAP() + ')';
 
-  let atkBreak = `d20(${d20}) + mod(${mod > 0 ? '+'+mod : mod})`;
-  if (map !== 0) atkBreak += ` + MAP(${map})`;
-
-  // Damage
-  const dmgParts = parseDamage(modalWeapon.damage);
   let dmgTotal = 0;
-  let dmgBreakParts = [];
-  let allDmgFilled = true;
+  const breakParts = [];
 
-  dmgParts.forEach((p, i) => {
+  // Weapon dice
+  const rolls = modalWeapon.damage_rolls || parseDamageToRolls(modalWeapon.damage);
+  rolls.forEach((roll, i) => {
     const inp = document.getElementById('modal-dmg-' + i);
-    const rolled = parseInt(inp?.value);
-    if (isNaN(rolled)) { allDmgFilled = false; return; }
-    const total = rolled + p.bonus;
-    dmgTotal += total;
-    dmgBreakParts.push(`${rolled}${p.bonus !== 0 ? (p.bonus > 0 ? '+'+p.bonus : p.bonus) : ''}`);
+    const singleDie = parseInt(inp?.value);
+    if (isNaN(singleDie)) return;
+    const dc = roll.dice * (modalIsCrit ? 2 : 1);
+    const rolled = singleDie * dc;
+    dmgTotal += rolled;
+    breakParts.push(dc + '\xd7' + singleDie + ' ' + roll.type);
   });
 
-  // Precision die — only count if prey toggle is ON
-  let precisionTotal = 0;
-  const preyTogOn = document.getElementById('prey-tog')?.classList.contains('on');
-  const precInp = document.getElementById('modal-precision-die');
-  if (precInp && preyTogOn && document.getElementById('precision-row').style.display !== 'none') {
-    const pv = parseInt(precInp.value);
-    if (!isNaN(pv)) { precisionTotal = pv; dmgBreakParts.push(`prec(${pv})`); dmgTotal += pv; }
+  // Flat bonus
+  const flatEl = document.getElementById('modal-flat-bonus');
+  if (flatEl) {
+    const flatVal = parseInt(flatEl.textContent);
+    if (!isNaN(flatVal) && flatVal !== 0) {
+      dmgTotal += flatVal;
+      breakParts.push((flatVal > 0 ? '+' : '') + flatVal + ' base');
+    }
   }
 
-  // Display
+  // Crit additions
+  if (modalIsCrit) {
+    (modalWeapon.crit_additions || []).forEach((crit, ci) => {
+      const inp = document.getElementById('modal-crit-' + ci);
+      const sv  = parseInt(inp?.value);
+      if (isNaN(sv)) return;
+      const rolled = sv * crit.dice;
+      dmgTotal += rolled;
+      breakParts.push(crit.dice + '\xd7' + sv + ' ' + crit.type + ' (' + crit.label + ')');
+    });
+  }
+
+  // Precision die
+  const preyTogOn = document.getElementById('prey-tog')?.classList.contains('on');
+  if (preyTogOn) {
+    const pv = parseInt(document.getElementById('modal-precision-die')?.value);
+    if (!isNaN(pv)) { dmgTotal += pv; breakParts.push('prec(' + pv + ')'); }
+  }
+
   document.getElementById('res-atk').textContent = atkTotal;
   document.getElementById('res-atk-break').textContent = atkBreak;
 
-  if (allDmgFilled || dmgBreakParts.length) {
+  if (breakParts.length) {
     document.getElementById('res-dmg').textContent = dmgTotal;
-    document.getElementById('res-dmg-break').textContent = dmgBreakParts.join(' + ');
+    document.getElementById('res-dmg-break').textContent = breakParts.join(' + ');
   } else {
-    document.getElementById('res-dmg').textContent = '—';
+    document.getElementById('res-dmg').textContent = '\u2014';
     document.getElementById('res-dmg-break').textContent = 'Enter dice above';
   }
-
   document.getElementById('result-grid').style.display = 'grid';
 }
 
-// Close modal on Escape
+// ── Keyboard shortcuts ──────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModalDirect();
   if (e.key === 'Enter' && document.getElementById('atk-modal-backdrop').classList.contains('open')) calcResults();
 });
-

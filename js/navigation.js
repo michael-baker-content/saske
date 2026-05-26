@@ -18,12 +18,19 @@ fetch('character.json')
     // Seed inventory from JSON on first load; preserve state on subsequent loads
     if (!S.inventory) {
       S.inventory = C.inventory.map(i => ({
-        name:     i.name,
-        bulk:     i.bulk,
-        quantity: i.quantity ?? null,
-        notes:    i.note   ?? '',
-        used:     0,        // tracks how many of this item have been used
+        name:          i.name,
+        bulk:          i.bulk,
+        quantity:      i.quantity      ?? 1,
+        notes:         i.notes         ?? '',
+        used:          0,
+        ammo:          i.ammo          ?? false,
+        ammoPerBundle: i.ammoPerBundle ?? undefined,
       }));
+    } else {
+      // Migrate existing state items that predate the ammo field
+      S.inventory.forEach(item => {
+        if (item.ammo === undefined) item.ammo = false;
+      });
     }
     saveState();
     build();

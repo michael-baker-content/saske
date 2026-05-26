@@ -30,9 +30,9 @@ const ASSURANCE_RESULT = 24; // 10 + Master proficiency bonus (14)
 // Medicine tool state (not persisted — resets on page load)
 let medState = {
   selectedTargets: new Set(),
-  tier: 'expert',
+  tier: null,
   useAssurance: false,
-  action: 'battle',   // 'battle' | 'treat'
+  action: null,
 };
 
 function buildMedicineTool() {
@@ -40,7 +40,7 @@ function buildMedicineTool() {
   const grid = document.getElementById('med-party-grid');
   if (!grid) return;
   grid.innerHTML = PARTY.map((p, i) => `
-    <div class="med-member" id="med-member-${i}" onclick="medToggleMember(${i})">
+    <div class="med-member" id="med-member-${i}" ontouchstart="" onclick="medToggleMember(${i})">
       <div class="med-member-name">${p.name}</div>
       <div class="med-member-tag">${p.robust ? 'Robust Health' : ''}</div>
     </div>
@@ -155,7 +155,43 @@ function medClearResult() {
   const area = document.getElementById('med-result-area');
   if (area) area.classList.remove('show');
   const diceArea = document.getElementById('med-dice-area');
-  if (diceArea) { diceArea.style.display = 'none'; diceArea.innerHTML = ''; }
+  if (diceArea) diceArea.style.display = 'none';
+  const diceGrid = document.getElementById('med-dice-grid');
+  if (diceGrid) diceGrid.innerHTML = '';
+  const applyBtn = document.getElementById('med-apply-btn');
+  if (applyBtn) applyBtn.style.display = 'none';
+  // Always re-enable Confirm when clearing
+  const confirmBtn = document.querySelector('.med-calc-btn');
+  if (confirmBtn) confirmBtn.disabled = false;
+}
+
+function medReset() {
+  // Deselect all targets
+  medState.selectedTargets.clear();
+  PARTY.forEach((_, idx) => {
+    const el = document.getElementById('med-member-' + idx);
+    if (el) el.classList.remove('selected');
+  });
+  // Deactivate type + tier buttons
+  medState.action = null;
+  medState.tier   = null;
+  document.querySelectorAll('[data-action]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#med-tier-btns .med-tier-btn').forEach(b => b.classList.remove('active'));
+  // Reset assurance
+  medState.useAssurance = false;
+  document.getElementById('med-assurance-tog')?.classList.remove('on');
+  // Clear roll input + total
+  const d20 = document.getElementById('med-d20');
+  if (d20) d20.value = '';
+  document.getElementById('med-total-display').textContent = '';
+  // Re-enable confirm, hide apply
+  const confirmBtn = document.querySelector('.med-calc-btn');
+  if (confirmBtn) confirmBtn.disabled = false;
+  const applyBtn = document.getElementById('med-apply-btn');
+  if (applyBtn) applyBtn.style.display = 'none';
+  // Clear result + dice
+  medClearResult();
+  medUpdateUI();
 }
 
 function medGetCheckTotal() {
@@ -204,7 +240,6 @@ function medCalculate() {
 
   const tier = MED_TIERS[medState.tier];
 
-  // Assurance cannot reach DC 30 — block before computing
   if (medState.useAssurance && ASSURANCE_RESULT < tier.dc) {
     medShowWarning(`Assurance (${ASSURANCE_RESULT}) does not meet DC ${tier.dc}. Use a rolled check for this tier.`);
     return;
@@ -217,34 +252,40 @@ function medCalculate() {
   const outcome = medGetOutcome(total, tier.dc);
   const profile = medHealingProfile(outcome, tier);
 
-  // Show dice input area if we need dice rolls
-  const diceArea = document.getElementById('med-dice-area');
+  const diceArea  = document.getElementById('med-dice-area');
+  const diceGrid  = document.getElementById('med-dice-grid');
+  const diceLabel = document.getElementById('med-dice-label');
+  const applyBtn  = document.getElementById('med-apply-btn');
+  const confirmBtn = document.querySelector('.med-calc-btn');
+
   if (profile.diceCount > 0) {
-    diceArea.style.display = 'flex';
-    // Show context: what the dice are for
     const isDmg = profile.isDamage;
-    const diceContext = isDmg
-      ? `<span style="font-size:11px;color:var(--red-b);align-self:center">Critical failure — roll 1d8 <strong>damage</strong></span>`
-      : `<span style="font-size:11px;color:var(--text3);align-self:center">
-           Roll ${profile.diceCount}d${profile.sides}
-           ${profile.bonus > 0 ? ` + ${profile.bonus} (tier)` : ''}
-           ${profile.medicBonus > 0 ? ` + ${profile.medicBonus} (Medic Ded.)` : ''}
-         </span>`;
-    diceArea.innerHTML = diceContext +
-      Array.from({ length: profile.diceCount }, (_, i) => `
-        <div class="med-die-group">
-          <label class="med-die-label">${isDmg ? 'dmg d8' : 'd' + profile.sides} #${i+1}</label>
-          <input class="med-roll-input" style="width:52px" type="number" id="med-die-${i}"
-            min="1" max="${profile.sides}" placeholder="—"/>
-        </div>
-      `).join('') + `
-      <button class="btn sm" style="align-self:flex-end;margin-bottom:2px" onclick="medApplyDice()">Apply</button>
-    `;
-    // Focus first die
+    if (diceLabel) diceLabel.textContent = isDmg ? 'Damage Dice' : 'Healing Dice';
+
+    diceGrid.innerHTML =
+      '<div class="modal-die-group">'
+      + '<input class="modal-input" type="number" id="med-die-0" placeholder="\u2014" min="1" max="' + profile.sides + '"/>'
+      + '<div class="modal-die-sublabel' + (isDmg ? ' crit-label' : '') + '">'
+      +   profile.diceCount + 'd' + profile.sides + (isDmg ? ' dmg' : ' heal')
+      + '</div>'
+      + '</div>'
+      + (profile.bonus > 0
+        ? '<div class="modal-die-group">'
+          + '<div class="modal-flat-bonus">+' + profile.bonus + '</div>'
+          + '<div class="modal-die-sublabel">tier</div>'
+          + '</div>'
+        : '');
+
+    diceArea.style.display = 'block';
+    // Show Apply (highlighted) — Confirm stays disabled until Apply pressed
+    if (applyBtn) { applyBtn.style.display = ''; applyBtn.disabled = false; }
+    if (confirmBtn) confirmBtn.disabled = true;
     setTimeout(() => document.getElementById('med-die-0')?.focus(), 60);
-    // Show outcome banner immediately
     medShowOutcomeBanner(outcome, total, tier);
   } else {
+    if (diceArea) diceArea.style.display = 'none';
+    if (applyBtn) applyBtn.style.display = 'none';
+    if (confirmBtn) confirmBtn.disabled = false;
     medApplyDiceWithProfile(profile, outcome, total, tier, targets);
   }
 }
@@ -262,20 +303,25 @@ function medShowOutcomeBanner(outcome, total, tier) {
 }
 
 function medApplyDice() {
-  const tier = MED_TIERS[medState.tier];
-  const total = medGetCheckTotal();
+  const tier    = MED_TIERS[medState.tier];
+  const total   = medGetCheckTotal();
   const outcome = medGetOutcome(total, tier.dc);
   const profile = medHealingProfile(outcome, tier);
   const targets = [...medState.selectedTargets];
 
-  // Collect dice
-  let diceSum = 0;
-  for (let i = 0; i < profile.diceCount; i++) {
-    const v = parseInt(document.getElementById(`med-die-${i}`)?.value);
-    if (isNaN(v) || v < 1) { alert(`Enter die #${i+1}`); return; }
-    diceSum += v;
-  }
-  profile.rolledDice = diceSum;
+  // Single input — user enters one die value, multiply by diceCount
+  const singleVal = parseInt(document.getElementById('med-die-0')?.value);
+  if (isNaN(singleVal) || singleVal < 1) { alert('Enter your die roll.'); return; }
+  profile.rolledDice = singleVal * profile.diceCount;
+
+  const diceArea  = document.getElementById('med-dice-area');
+  const applyBtn  = document.getElementById('med-apply-btn');
+  if (diceArea) diceArea.style.display = 'none';
+  if (applyBtn) applyBtn.style.display = 'none';
+  // Re-enable Confirm for next use
+  const confirmBtn = document.querySelector('.med-calc-btn');
+  if (confirmBtn) confirmBtn.disabled = false;
+
   medApplyDiceWithProfile(profile, outcome, total, tier, targets);
 }
 
@@ -310,19 +356,30 @@ function medApplyDiceWithProfile(profile, outcome, total, tier, targets) {
       const diceRolled   = profile.rolledDice ?? 0;
       const robustBonus  = member.robust ? member.level : 0;
       const medicBonus   = profile.medicBonus || 0;
+      // Both are circumstance bonuses — same type cannot stack, only the higher applies
+      const circumstanceBonus = Math.max(medicBonus, robustBonus);
       const baseHeal     = diceRolled + profile.bonus;
-      const totalHeal    = baseHeal + medicBonus + robustBonus;
+      const totalHeal    = baseHeal + circumstanceBonus;
 
-      // Build breakdown label showing each component
+      // Breakdown label: show which circumstance bonus applied and why
       let diceLabel = `${profile.diceCount}d8`;
-      if (profile.bonus > 0)  diceLabel += `+${profile.bonus}`;
-      if (medicBonus > 0)     diceLabel += ` +${medicBonus} (Medic Ded.)`;
-      const robustLabel  = robustBonus > 0 ? ` +${robustBonus} (Robust)` : '';
+      if (profile.bonus > 0) diceLabel += `+${profile.bonus}`;
+      if (circumstanceBonus > 0) {
+        if (robustBonus > medicBonus) {
+          diceLabel += ` +${circumstanceBonus} (Robust Health)`;
+        } else if (medicBonus > robustBonus) {
+          diceLabel += ` +${circumstanceBonus} (Medic Ded.)`;
+        } else {
+          // Equal — either label works; Medic Ded. is the healer's feat
+          diceLabel += ` +${circumstanceBonus} (Medic Ded.)`;
+        }
+      }
+      const robustLabel  = '';
 
       html = `<div class="med-target-row">
         <div>
           <span class="med-target-name">${member.name}</span>
-          <span class="med-target-dice"> ${diceLabel}${robustLabel}</span>
+          <span class="med-target-dice"> ${diceLabel}</span>
         </div>
         <span class="med-target-heal">+${totalHeal} HP</span>
       </div>`;
@@ -349,11 +406,13 @@ function medApplyDiceWithProfile(profile, outcome, total, tier, targets) {
   if (footerEl) footerEl.innerHTML = notes.map(n=>`▸ ${n}`).join('<br/>');
 
   // Start cooldown tracking on success/crit success only (crit fail causes damage, not immunity)
-  // Treat Wounds immunity on success; Battle Medicine immunity via Medic Dedication = 1 hr
   if (outcome === 'hit' || outcome === 'crit') {
     targets.forEach(idx => bmStartTracking(PARTY[idx].name, 60));
     syncBMTracker();
   }
+
+  // Deactivate all UI selections after operation completes
+  setTimeout(() => medReset(), 1800);
 }
 
 
@@ -444,10 +503,10 @@ function syncBMTracker() {
         <span class="bm-tracker-time" style="color:${barColor}">${timeLabel}</span>
         ${recentBadge}
         <div class="bm-tracker-controls">
-          <button class="bm-adj-btn" onclick="bmAdjust('${name}', 10)" title="+10 min">+</button>
-          <button class="bm-adj-btn" onclick="bmAdjust('${name}', -10)" title="-10 min">−</button>
+          <button class="bm-adj-btn" ontouchstart="" onclick="bmAdjust('${name}', 10)" title="+10 min">+</button>
+          <button class="bm-adj-btn" ontouchstart="" onclick="bmAdjust('${name}', -10)" title="-10 min">−</button>
         </div>
-        <button class="bm-remove-btn" onclick="bmRemoveMember('${name}')" title="Remove">✕</button>
+        <button class="bm-remove-btn" ontouchstart="" onclick="bmRemoveMember('${name}')" title="Remove">✕</button>
       </div>`;
     }).join('');
   }
@@ -459,7 +518,7 @@ function syncBMTracker() {
     if (untracked.length) {
       addRow.innerHTML = '<span style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.05em;align-self:center">ADD:</span>' +
         untracked.map(p =>
-          `<button class="bm-member-chip" onclick="bmToggleMember('${p.name}')">${p.name}</button>`
+          `<button class="bm-member-chip" ontouchstart="" onclick="bmToggleMember('${p.name}')">${p.name}</button>`
         ).join('');
     } else {
       addRow.innerHTML = '';

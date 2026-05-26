@@ -10,7 +10,7 @@
   display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-left: 8px;
 }
 .inv-item-name { font-size: 13px; font-weight: 500; }
-.inv-item-notes { font-size: 11px; color: var(--text3); }
+.inv-item-notes { font-size: 11px; color: var(--text3); display: block; margin-top: 2px; }
 .inv-qty-badge {
   font-family: 'DM Mono', monospace;
   font-size: 12px; font-weight: 500; color: var(--amber);
@@ -49,8 +49,9 @@
 .inv-input {
   background: var(--bg3); border: 1px solid var(--border2);
   border-radius: 3px; color: var(--text);
-  font-family: 'Inter', sans-serif; font-size: 14px;
+  font-family: 'Inter', sans-serif; font-size: 16px;
   padding: 5px 8px; width: 100%;
+  /* 16px minimum prevents iOS Safari/Chrome from zooming on focus */
 }
 .inv-input:focus { outline: 2px solid var(--blue-dim); outline-offset: 1px; }
 .inv-field-bulk .inv-input,
@@ -326,3 +327,72 @@ input[type=number] {
 .session-feedback { font-size: 12px; padding: 7px 10px; border-radius: 4px; }
 .session-feedback-success { background: rgba(46,138,78,0.15); border: 1px solid var(--green); color: var(--green-b); }
 .session-feedback-error   { background: rgba(176,48,48,0.15); border: 1px solid var(--red);   color: var(--red-b); }
+/* ── Inventory item name as button / ammo tag ── */
+.inv-name-btn {
+  background: none; border: none; color: var(--blue);
+  font-family: 'Inter', sans-serif; font-weight: 600;
+  font-size: 13px; padding: 0; cursor: pointer;
+  text-align: left; text-decoration: underline;
+  text-underline-offset: 2px; text-decoration-color: var(--blue-dim);
+}
+.inv-name-btn:hover, .inv-name-btn:active { color: var(--text); text-decoration-color: var(--text3); }
+.inv-ammo-tag {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  color: var(--amber); background: var(--amber-dim);
+  border-radius: 2px; padding: 1px 4px; margin-left: 5px;
+  letter-spacing: 0.05em; text-transform: uppercase; vertical-align: middle;
+}
+.inv-qty-wrap { font-size: 12px; margin-left: 4px; }
+
+/* ── Item detail modal ── */
+#inv-modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+#inv-modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; width: 100%; max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.inv-modal-body {
+  padding: 14px 16px 16px;
+}
+.inv-modal-fields {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+
+/* ── Inventory table ── */
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.inv-th {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 700;
+  color: var(--text3); letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 4px 6px 6px;
+  border-bottom: 1px solid var(--border2);
+  text-align: left;
+}
+.inv-th-qty, .inv-th-bulk { text-align: right; }
+.inv-tr { border-bottom: 1px solid var(--border); }
+.inv-tr:last-child { border-bottom: none; }
+.inv-td {
+  padding: 6px 6px;
+  vertical-align: middle;
+}
+.inv-td-qty, .inv-td-bulk {
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--amber);
+  white-space: nowrap;
+  width: 1%;        /* shrink to content */
+}
+.inv-td-bulk { color: var(--text2); }
+.inv-td-name { padding-left: 2px; }

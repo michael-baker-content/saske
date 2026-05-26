@@ -121,7 +121,7 @@ function renderConditions(listId, arr, removeFn) {
   if (!el) return;
   if (!arr.length) { el.innerHTML = '<span class="cond-none">No active conditions</span>'; return; }
   el.innerHTML = arr.map(c =>
-    `<span class="cond-badge ${c.type==='good'?'good':''}">${c.name}<span class="cond-x" onclick="${removeFn}('${c.name}')">✕</span></span>`
+    `<span class="cond-badge ${c.type==='good'?'good':''}">${c.name}<span class="cond-x" ontouchstart="" onclick="${removeFn}('${c.name}')">✕</span></span>`
   ).join('');
 }
 
@@ -184,7 +184,7 @@ function syncHakiBardingCard() {
       <span style="font-size:10px;color:var(--text3);margin-left:4px">${co.ac_proficiency} (+${acProf})</span>
     </div>
     <div class="toggle-row" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-      <div class="tog${S.haki_barding ? ' on' : ''}" id="haki-barding-tog" onclick="toggleHakiBarding()"><div class="tog-knob"></div></div>
+      <div class="tog${S.haki_barding ? ' on' : ''}" id="haki-barding-tog" ontouchstart="" onclick="toggleHakiBarding()"><div class="tog-knob"></div></div>
       <span class="tog-label">Barding currently worn <span style="font-size:10px;color:var(--text3)">(−3 to Stealth, Acrobatics, Athletics)</span></span>
     </div>
   `;

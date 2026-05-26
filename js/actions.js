@@ -234,21 +234,59 @@ function exportSessionReport() {
 
   // ── Inventory ──
   const inv = S.inventory || [];
-  const usedItems = inv.filter(i => i.quantity != null && i.used > 0);
   lines.push('## Inventory');
   if (inv.length) {
-    lines.push('| Item | Bulk | Qty | Used | Remaining |');
-    lines.push('|---|---|---|---|---|');
-    inv.forEach(item => {
-      const qty  = item.quantity != null ? item.quantity : '—';
-      const used = item.quantity != null ? item.used : '—';
-      const rem  = item.quantity != null ? (item.quantity - item.used) : '—';
-      lines.push('| ' + item.name + ' | ' + item.bulk + ' | ' + qty + ' | ' + used + ' | ' + rem + ' |');
-    });
+    // Bulk helper (mirrors panels-inventory.js calcBulk)
+    const calcBulkExport = (bulkStr, qty) => {
+      const q = qty ?? 1;
+      const b = (bulkStr ?? '—').trim();
+      if (b === '—' || b === '-') return '—';
+      const lMatch = b.match(/^(\d*)L$/i);
+      if (lMatch) {
+        const perItem = lMatch[1] === '' ? 1 : parseInt(lMatch[1]);
+        const totalL  = q * perItem;
+        if (totalL < 10) return totalL + 'L';
+        const bulk = Math.floor(totalL / 10);
+        const remL = totalL % 10;
+        return remL === 0 ? String(bulk) : bulk + ' (' + remL + 'L)';
+      }
+      const n = parseFloat(b);
+      if (!isNaN(n)) { const t = n * q; return String(Number.isInteger(t) ? t : t); }
+      return b;
+    };
+
+    // Standard (non-ammo) items
+    const stdItems = inv.filter(i => !i.ammo);
+    if (stdItems.length) {
+      lines.push('| Item | Qty | Bulk | Notes |');
+      lines.push('|---|---|---|---|');
+      stdItems.forEach(item => {
+        const qty  = item.quantity != null ? item.quantity : '—';
+        const bulk = calcBulkExport(item.bulk, item.quantity ?? 1);
+        lines.push('| ' + item.name + ' | ' + qty + ' | ' + bulk + ' | ' + (item.notes || '') + ' |');
+      });
+      lines.push('');
+    }
+
+    // Ammo items
+    const ammoItems = inv.filter(i => i.ammo && i.quantity != null);
+    if (ammoItems.length) {
+      lines.push('**Ammunition**');
+      lines.push('| Item | Bundles | Per Bundle | Total | Used | Remaining |');
+      lines.push('|---|---|---|---|---|---|');
+      ammoItems.forEach(item => {
+        const perBundle = item.ammoPerBundle ?? 1;
+        const total     = item.quantity * perBundle;
+        const used      = item.used ?? 0;
+        const remaining = total - used;
+        lines.push('| ' + item.name + ' | ' + item.quantity + ' | ' + perBundle + ' | ' + total + ' | ' + used + ' | ' + remaining + ' |');
+      });
+      lines.push('');
+    }
   } else {
     lines.push('*No inventory data.*');
+    lines.push('');
   }
-  lines.push('');
 
   // ── Battle Medicine Cooldowns ──
   const cds = S.bm_cooldowns || {};
