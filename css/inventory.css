@@ -1,0 +1,328 @@
+/* ── Inventory editable ── */
+.inv-row-edit {
+  align-items: flex-start;
+  padding: 6px 0;
+}
+.inv-row-main {
+  display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0;
+}
+.inv-row-right {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-left: 8px;
+}
+.inv-item-name { font-size: 13px; font-weight: 500; }
+.inv-item-notes { font-size: 11px; color: var(--text3); }
+.inv-qty-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; font-weight: 500; color: var(--amber);
+}
+.inv-del-btn {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 14px; padding: 0 2px; line-height: 1;
+}
+.inv-del-btn:hover { color: var(--red-b); }
+.inv-empty { font-size: 12px; color: var(--text3); font-style: italic; padding: 4px 0 8px; }
+
+/* Add item form */
+.inv-add-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.inv-add-title {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
+}
+.inv-add-fields {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  grid-template-areas:
+    "name bulk qty"
+    "notes notes notes";
+}
+.inv-field-name  { grid-area: name; }
+.inv-field-bulk  { grid-area: bulk; }
+.inv-field-qty   { grid-area: qty; }
+.inv-field-notes { grid-area: notes; }
+.inv-field-group { display: flex; flex-direction: column; gap: 3px; }
+.inv-field-label { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.04em; }
+.inv-input {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 3px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  padding: 5px 8px; width: 100%;
+}
+.inv-input:focus { outline: 2px solid var(--blue-dim); outline-offset: 1px; }
+.inv-field-bulk .inv-input,
+.inv-field-qty  .inv-input  { width: 64px; }
+
+/* ── Stats + Saves combined card ── */
+.stats-saves-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 520px) {
+  .stats-saves-grid { grid-template-columns: 1fr 1fr; }
+  /* On wide views the card sits within panel-cols, but we force it full-width */
+}
+.stats-saves-card { padding-bottom: 12px; }
+.stats-saves-group .card-title { margin-bottom: 6px; }
+
+/* Star ratings */
+.stat-stars { margin-top: 4px; line-height: 1; }
+.prof-stars { display: inline-flex; gap: 1px; }
+.star { font-size: 11px; line-height: 1; }
+.star-filled { color: var(--amber); }
+.star-empty  { color: var(--border2); }
+
+/* ── Equipped Armor card ── */
+.armor-name {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 8px;
+}
+.armor-stats { margin-bottom: 8px; }
+.armor-stat-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.armor-tile {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 4px; text-align: center; padding: 6px 4px;
+}
+.armor-note {
+  font-size: 11px; color: var(--green-b);
+  margin-bottom: 6px;
+}
+.armor-proficiency {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text3);
+}
+
+/* ── Stat tile hover tooltips ── */
+/* Tooltip rendered as a fixed-position element via JS — escapes all overflow/clip contexts */
+.has-tooltip { cursor: default; }
+
+#stat-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  max-width: min(260px, 80vw);
+  white-space: normal;
+  text-align: center;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+#stat-tooltip.visible { opacity: 1; }
+#stat-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--border2);
+}
+
+/* ── Companion header strip ── */
+.comp-header {
+  padding: 0 0 0 0;
+  overflow: hidden;
+}
+.comp-identity {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.comp-avatar {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  background: var(--bg3);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.comp-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}
+.comp-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 10px 6px;
+  gap: 2px;
+}
+.comp-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--blue);
+  letter-spacing: 0.02em;
+}
+.comp-sub {
+  font-size: 10px;
+  color: var(--text3);
+}
+.comp-hp-controls {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 5px 8px 6px;
+  border-top: 1px solid var(--border);
+}
+.comp-hp-controls .hp-in {
+  flex: 0 0 66px;
+  width: 66px;
+}
+.comp-hp-controls .strip-btn {
+  flex: 1;
+  padding: 5px 0;
+  text-align: center;
+  min-width: 0;
+}
+.comp-hp-controls .strip-btn.dmg {
+  flex: 1.2;
+}
+
+/* ── Dark scrollbars ── */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+::-webkit-scrollbar-corner { background: var(--bg2); }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--border2) var(--bg2); }
+
+/* ── Hide number input spinners (native spinners are light-themed) ── */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ── Medicine d20 clear button ── */
+.med-d20-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.med-d20-wrap .med-roll-input {
+  padding-right: 22px; /* room for the × button */
+}
+.med-d20-clear {
+  position: absolute;
+  right: 3px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.med-d20-clear:hover { color: var(--text); }
+
+/* Prey hint second line */
+.prey-hint-line {
+  display: block;
+  margin-top: 2px;
+}
+
+/* Resolve button inline with action buttons */
+.med-calc-inline {
+  flex: 1.2;
+  width: auto;
+  padding: 7px 4px;
+  font-size: 12px;
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--bg4);
+}
+.med-calc-inline:active { background: var(--blue-muted); }
+
+/* Skills grid: 2 cols on narrow, 3 cols on wider */
+.skill-grid-3col {
+  grid-template-columns: 1fr 1fr;
+}
+@media (min-width: 520px) {
+  .skill-grid-3col { grid-template-columns: 1fr 1fr 1fr; }
+}
+.skill-grid-3col .skill-row { font-size: 11px; padding: 3px 0; }
+.skill-grid-3col .skill-mod { font-size: 11px; }
+.skill-grid-3col .skill-prof-badge { font-size: 8px; }
+
+/* Centre the 5 party member buttons — flex wrap centres on all widths */
+.med-party-centered {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.med-party-centered .med-member {
+  flex: 0 0 auto;
+  min-width: 80px;
+}
+
+/* Battle Medicine Quick Ref two-column layout */
+.bm-quick-ref-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 16px;
+}
+@media (min-width: 480px) {
+  .bm-quick-ref-grid { grid-template-columns: 1fr 1fr; }
+  .bm-quick-ref-grid > div:last-child .medic-row:first-child { border-top: none; padding-top: 0; }
+}
+
+/* ── Session Controls ── */
+.session-controls { display: flex; flex-direction: column; gap: 10px; }
+.session-btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.session-export-btn,
+.session-reset-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 12px 8px; border-radius: 5px; cursor: pointer;
+  border: 1px solid var(--border2); background: var(--bg3);
+  text-align: center; min-height: 64px;
+}
+.session-export-btn { border-color: var(--blue); }
+.session-export-btn:hover { background: var(--blue-muted); }
+.session-reset-btn { border-color: var(--red); }
+.session-reset-btn:hover { background: rgba(176,48,48,0.12); }
+.session-btn-icon { font-size: 20px; line-height: 1; }
+.session-btn-label { font-size: 12px; font-weight: 700; color: var(--text); }
+.session-export-btn .session-btn-label { color: var(--blue); }
+.session-reset-btn .session-btn-label { color: var(--red-b); }
+.session-btn-sub { font-size: 10px; color: var(--text3); }
+.session-confirm {
+  background: rgba(176,48,48,0.1); border: 1px solid var(--red);
+  border-radius: 4px; padding: 10px 12px; display: flex;
+  flex-direction: column; gap: 8px;
+}
+.session-confirm-msg { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.session-confirm-btns { display: flex; gap: 8px; }
+.session-feedback { font-size: 12px; padding: 7px 10px; border-radius: 4px; }
+.session-feedback-success { background: rgba(46,138,78,0.15); border: 1px solid var(--green); color: var(--green-b); }
+.session-feedback-error   { background: rgba(176,48,48,0.15); border: 1px solid var(--red);   color: var(--red-b); }

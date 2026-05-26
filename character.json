@@ -1,0 +1,529 @@
+{
+  "meta": {
+    "name": "Saske Ullaell",
+    "subtitle": "Human (Dromaar) \u00b7 Ranger 8 \u00b7 Hunter's Edge: Precision",
+    "ancestry": "Human",
+    "heritage": "Dromaar",
+    "background": "Ex-Con Token Guard",
+    "class": "Ranger",
+    "level": 8,
+    "size": "Medium",
+    "languages": [
+      "Common",
+      "Varisian",
+      "Osriani",
+      "Sakvroth"
+    ]
+  },
+  "attributes": {
+    "str": 0,
+    "dex": 4,
+    "con": 2,
+    "int": 2,
+    "wis": 4,
+    "cha": 0
+  },
+  "defenses": {
+    "hp_max": 104,
+    "ac": 26,
+    "ac_details": "+1 Leather Armor \u00b7 Trained \u00b7 Dex cap 4",
+    "class_dc": 24,
+    "class_dc_proficiency": "Trained",
+    "ac_proficiency": "Trained",
+    "ac_base": 10,
+    "class_dc_key_attribute": "wis"
+  },
+  "perception": {
+    "modifier": 18,
+    "proficiency": "Master",
+    "key_attribute": "wis"
+  },
+  "saving_throws": {
+    "fortitude": {
+      "modifier": 14,
+      "proficiency": "Expert",
+      "key_attribute": "con"
+    },
+    "reflex": {
+      "modifier": 18,
+      "proficiency": "Master",
+      "key_attribute": "dex"
+    },
+    "will": {
+      "modifier": 16,
+      "proficiency": "Expert",
+      "key_attribute": "wis"
+    }
+  },
+  "weapons": [
+    {
+      "name": "+1 Striking Shortbow",
+      "attack": 17,
+      "damage": "2d6 P",
+      "traits": [
+        "Deadly d10",
+        "Range 60 ft.",
+        "Reload 0"
+      ],
+      "note": "+1d8 precision on 1st hit vs Hunted Prey",
+      "note_type": "good"
+    },
+    {
+      "name": "+1 Striking Shortsword",
+      "attack": 17,
+      "damage": "2d6 P/S",
+      "traits": [
+        "Agile",
+        "Finesse",
+        "Versatile S"
+      ],
+      "note": "MAP \u22124/\u22128 \u00b7 vs Prey \u22123/\u22126",
+      "note_type": "neutral"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Medicine",
+      "modifier": 19,
+      "proficiency": "Master",
+      "item_bonus": 1,
+      "key_attribute": "wis"
+    },
+    {
+      "name": "Perception",
+      "modifier": 18,
+      "proficiency": "Master",
+      "key_attribute": "wis"
+    },
+    {
+      "name": "Lore: Absalom",
+      "modifier": 16,
+      "proficiency": "Master",
+      "notes": "Additional Lore feat \u2014 auto-advances with level",
+      "key_attribute": "int"
+    },
+    {
+      "name": "Survival",
+      "modifier": 16,
+      "proficiency": "Expert",
+      "key_attribute": "wis"
+    },
+    {
+      "name": "Thievery",
+      "modifier": 16,
+      "proficiency": "Expert",
+      "key_attribute": "dex"
+    },
+    {
+      "name": "Nature",
+      "modifier": 14,
+      "proficiency": "Trained",
+      "key_attribute": "wis"
+    },
+    {
+      "name": "Religion",
+      "modifier": 14,
+      "proficiency": "Trained",
+      "key_attribute": "wis"
+    },
+    {
+      "name": "Stealth",
+      "modifier": 14,
+      "proficiency": "Expert",
+      "key_attribute": "dex"
+    },
+    {
+      "name": "Acrobatics",
+      "modifier": 13,
+      "proficiency": "Trained",
+      "key_attribute": "dex"
+    },
+    {
+      "name": "Lore: Underworld",
+      "modifier": 12,
+      "proficiency": "Trained",
+      "key_attribute": "int"
+    },
+    {
+      "name": "Society",
+      "modifier": 12,
+      "proficiency": "Trained",
+      "key_attribute": "int"
+    },
+    {
+      "name": "Athletics",
+      "modifier": 9,
+      "proficiency": "Trained",
+      "key_attribute": "str"
+    },
+    {
+      "name": "Arcana",
+      "proficiency": "Untrained",
+      "key_attribute": "int",
+      "modifier": 2
+    },
+    {
+      "name": "Crafting",
+      "proficiency": "Untrained",
+      "key_attribute": "int",
+      "modifier": 2
+    },
+    {
+      "name": "Occultism",
+      "proficiency": "Untrained",
+      "key_attribute": "int",
+      "modifier": 2
+    },
+    {
+      "name": "Deception",
+      "proficiency": "Untrained",
+      "key_attribute": "cha",
+      "modifier": 0
+    },
+    {
+      "name": "Diplomacy",
+      "proficiency": "Untrained",
+      "key_attribute": "cha",
+      "modifier": 0
+    },
+    {
+      "name": "Intimidation",
+      "proficiency": "Untrained",
+      "key_attribute": "cha",
+      "modifier": 0
+    },
+    {
+      "name": "Performance",
+      "proficiency": "Untrained",
+      "key_attribute": "cha",
+      "modifier": 0
+    }
+  ],
+  "assurance": {
+    "skill": "Medicine",
+    "result": 24
+  },
+  "battle_medicine": {
+    "check_modifier": 19,
+    "tiers": [
+      {
+        "proficiency": "Expert",
+        "dc": 20,
+        "base_success_heal": "2d8+10",
+        "base_crit_heal": "4d8+10",
+        "medic_ded_bonus": 5,
+        "success_heal": "2d8+15",
+        "crit_heal": "4d8+15",
+        "notes": "Treat Wounds tier +10, Medic Ded. +5"
+      },
+      {
+        "proficiency": "Master",
+        "dc": 30,
+        "base_success_heal": "2d8+30",
+        "base_crit_heal": "4d8+30",
+        "medic_ded_bonus": 10,
+        "success_heal": "2d8+40",
+        "crit_heal": "4d8+40",
+        "notes": "Treat Wounds tier +30, Medic Ded. +10"
+      }
+    ],
+    "assurance_result": 24,
+    "assurance_note": "Assurance (10 + Master prof 14) = 24. Meets DC 20 (Expert). Does not meet DC 30 (Master).",
+    "crit_fail_damage": "1d8 damage to target",
+    "cooldown": "1 hr / target (Medic Dedication)",
+    "max_targets": 4,
+    "treat_wounds_time": "10 min (Continual Recovery)",
+    "notes": [
+      "Robust Health: +8 HP when you are the target",
+      "Medic Ded. circumstance bonus stacks with tier bonus"
+    ],
+    "dc": 20,
+    "success_heal": "2d8+15",
+    "crit_success_heal": "4d8+15"
+  },
+  "feats": [
+    {
+      "name": "Animal Companion (Bird)",
+      "type": "Class",
+      "level": 1
+    },
+    {
+      "name": "Hunted Shot",
+      "type": "Class",
+      "level": 1,
+      "note": "via Natural Ambition"
+    },
+    {
+      "name": "Medic Dedication",
+      "type": "Class",
+      "level": 2
+    },
+    {
+      "name": "Companion's Cry",
+      "type": "Class",
+      "level": 4
+    },
+    {
+      "name": "Mature Animal Companion",
+      "type": "Class",
+      "level": 6
+    },
+    {
+      "name": "Warden's Boon",
+      "type": "Class",
+      "level": 8
+    },
+    {
+      "name": "Robust Health",
+      "type": "General",
+      "level": 3
+    },
+    {
+      "name": "Robust Recovery",
+      "type": "General",
+      "level": 7
+    },
+    {
+      "name": "Battle Medicine",
+      "type": "Skill",
+      "level": 2
+    },
+    {
+      "name": "Continual Recovery",
+      "type": "Skill",
+      "level": 4
+    },
+    {
+      "name": "Assurance (Medicine)",
+      "type": "Skill",
+      "level": 5
+    },
+    {
+      "name": "Ward Medic",
+      "type": "Skill",
+      "level": 6
+    },
+    {
+      "name": "Additional Lore",
+      "type": "Skill",
+      "level": 8
+    },
+    {
+      "name": "Pickpocket",
+      "type": "Background",
+      "level": 0
+    },
+    {
+      "name": "Natural Ambition",
+      "type": "Ancestry",
+      "level": 1
+    },
+    {
+      "name": "General Training",
+      "type": "Ancestry",
+      "level": 5
+    }
+  ],
+  "inventory": [
+    {
+      "name": "+1 Striking Shortbow",
+      "bulk": "1"
+    },
+    {
+      "name": "+1 Striking Shortsword",
+      "bulk": "L"
+    },
+    {
+      "name": "+1 Leather Armor",
+      "bulk": "1"
+    },
+    {
+      "name": "Expanded Healer's Toolkit",
+      "bulk": "1",
+      "note": "+1 item bonus to Medicine"
+    },
+    {
+      "name": "Healer's Gloves",
+      "bulk": "L"
+    },
+    {
+      "name": "Heavy Barding (Haki)",
+      "bulk": "3"
+    },
+    {
+      "name": "Thieves' Toolkit (Infiltrator)",
+      "bulk": "L"
+    },
+    {
+      "name": "Bracelet of Dashing",
+      "bulk": "L"
+    },
+    {
+      "name": "Obsidian Goggles",
+      "bulk": "\u2014"
+    },
+    {
+      "name": "Arrows",
+      "bulk": "L",
+      "quantity": 40
+    }
+  ],
+  "companion": {
+    "name": "Haki",
+    "type": "Bird",
+    "stage": "Mature",
+    "size": "Medium",
+    "hp_max": 64,
+    "ac": 26,
+    "ac_details": "Heavy Barding",
+    "saving_throws": {
+      "fortitude": {
+        "modifier": 14,
+        "proficiency": "Expert"
+      },
+      "reflex": {
+        "modifier": 16,
+        "proficiency": "Expert"
+      },
+      "will": {
+        "modifier": 15,
+        "proficiency": "Expert"
+      }
+    },
+    "attacks": [
+      {
+        "name": "Beak",
+        "traits": [
+          "Finesse"
+        ],
+        "attack": 14,
+        "damage": "2d6+3 P"
+      },
+      {
+        "name": "Talon",
+        "traits": [
+          "Agile",
+          "Finesse"
+        ],
+        "attack": 14,
+        "damage": "2d4+3 S"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Support Benefit",
+        "description": "Haki pecks at target's eyes. Until the start of your next turn, all hits deal persistent bleed and can Dazzle."
+      },
+      {
+        "name": "Mature Bonus Action",
+        "description": "If you don't Command Haki, he still takes 1 action on your turn to Stride or Strike."
+      }
+    ],
+    "attributes": {
+      "str": 3,
+      "dex": 4,
+      "con": 2,
+      "int": -4,
+      "wis": 3,
+      "cha": 0
+    },
+    "skills": [
+      {
+        "name": "Stealth",
+        "modifier": 16,
+        "proficiency": "Expert",
+        "barding_penalty": -3,
+        "key_attribute": "dex"
+      },
+      {
+        "name": "Acrobatics",
+        "modifier": 14,
+        "proficiency": "Trained",
+        "barding_penalty": -3,
+        "key_attribute": "dex"
+      },
+      {
+        "name": "Athletics",
+        "modifier": 13,
+        "proficiency": "Trained",
+        "barding_penalty": -3,
+        "key_attribute": "str"
+      },
+      {
+        "name": "Survival",
+        "modifier": 13,
+        "proficiency": "Trained",
+        "key_attribute": "wis"
+      },
+      {
+        "name": "Intimidation",
+        "modifier": 10,
+        "proficiency": "Trained",
+        "key_attribute": "cha"
+      }
+    ],
+    "equipped_barding": {
+      "name": "Heavy Barding",
+      "ac_bonus": 3,
+      "dex_cap": 3,
+      "check_penalty": -3,
+      "strength_req": 0,
+      "bulk": "3",
+      "note": "Barding check penalty applies to Stealth, Acrobatics, Athletics"
+    },
+    "ac_proficiency": "Trained",
+    "ac_base": 10,
+    "perception": {
+      "modifier": 15,
+      "proficiency": "Expert",
+      "key_attribute": "wis"
+    }
+  },
+  "conditions_list": {
+    "negative": [
+      "Blinded",
+      "Clumsy 1",
+      "Clumsy 2",
+      "Confused",
+      "Dazzled",
+      "Deafened",
+      "Doomed 1",
+      "Drained 1",
+      "Drained 2",
+      "Dying 1",
+      "Dying 2",
+      "Enfeebled 1",
+      "Fatigued",
+      "Frightened 1",
+      "Frightened 2",
+      "Grabbed",
+      "Immobilized",
+      "Paralyzed",
+      "Persistent Bleed",
+      "Persistent Fire",
+      "Prone",
+      "Restrained",
+      "Sickened 1",
+      "Slowed 1",
+      "Stunned 1",
+      "Unconscious"
+    ],
+    "positive": [
+      "Concealed",
+      "Flanking",
+      "Hidden",
+      "Invisible",
+      "Quickened"
+    ]
+  },
+  "equipped_armor": {
+    "name": "+1 Leather Armor",
+    "ac_bonus": 2,
+    "dex_cap": 4,
+    "check_penalty": -1,
+    "strength_req": 0,
+    "bulk": "1",
+    "traits": [],
+    "notes": "No check penalty to Stealth in leather armor"
+  }
+}
