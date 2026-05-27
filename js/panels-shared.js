@@ -13,7 +13,7 @@ function buildConditionCard(listId, selId, addFn, clearFn, title='Conditions', e
     <div class="cond-list" id="${listId}"><span class="cond-none">No active conditions</span></div>
     ${summaryHtml}
     <div class="row">
-      <select class="cond-select" id="${selId}">
+      <select class="cond-select" id="${selId}" onchange="document.getElementById('${selId}-add-btn').disabled=!this.value">
         <option value="">Add condition…</option>
         <optgroup label="Negative">
           ${C.conditions_list.negative.map(c=>`<option value="${c}|bad">${c}</option>`).join('')}
@@ -22,8 +22,8 @@ function buildConditionCard(listId, selId, addFn, clearFn, title='Conditions', e
           ${C.conditions_list.positive.map(c=>`<option value="${c}|good">${c}</option>`).join('')}
         </optgroup>
       </select>
-      <button class="btn sm" ontouchstart="" onclick="${addFn}()">Add</button>
-      <button class="btn sm danger" ontouchstart="" onclick="${clearFn}()">Clear</button>
+      <button class="btn sm" id="${selId}-add-btn" ontouchstart="" onclick="${addFn}()" disabled>Add</button>
+      <button class="btn sm danger" id="${listId}-clear-btn" ontouchstart="" onclick="${clearFn}()">Clear</button>
     </div>
   </div>`;
 }

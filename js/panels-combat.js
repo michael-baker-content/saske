@@ -90,8 +90,8 @@ function buildCombat() {
         <button class="btn sm danger" id="prey-clear" ontouchstart="" onclick="clearPrey()" style="display:none">Clear</button>
       </div>
       <div class="row" style="margin-bottom:6px">
-        <input class="text-in" type="text" id="prey-input" placeholder="Name your prey…"/>
-        <button class="btn gold" ontouchstart="" onclick="setPrey()">Hunt ◆</button>
+        <input class="text-in" type="text" id="prey-input" placeholder="Name your prey…" oninput="document.getElementById('prey-hunt-btn').disabled=!this.value.trim()"/>
+        <button class="btn gold" id="prey-hunt-btn" ontouchstart="" onclick="setPrey()" disabled>Hunt ◆</button>
       </div>
       <div class="prey-hint">+2 Perception (Seek) · +2 Survival (Track)<span class="prey-hint-line">Precision Edge +1d8 on 1st hit vs Prey</span></div>
     </div>
@@ -103,7 +103,7 @@ function buildCombat() {
         <div class="action-pip" id="a2" ontouchstart="" onclick="toggleAction('a2')">◆</div>
         <div class="action-pip" id="a3" ontouchstart="" onclick="toggleAction('a3')">◆</div>
         <div class="action-pip react" id="r1" ontouchstart="" onclick="toggleAction('r1')">↺</div>
-        <button class="btn sm" ontouchstart="" onclick="resetActions()" style="margin-left:auto">Reset Turn</button>
+        <button class="btn sm" id="reset-turn-btn" ontouchstart="" onclick="resetActions()" style="margin-left:auto">Reset Turn</button>
       </div>
       <div class="row">
         <div class="tog green" id="warden-tog" ontouchstart="" onclick="toggleWarden()"><div class="tog-knob"></div></div>
@@ -121,7 +121,7 @@ function buildCombat() {
         </div>
         <div class="weapon-row" style="margin-top:3px">
           <span class="weapon-atk" id="live-weapon-atk-${i}">+${w.attack}</span>
-          <span class="weapon-dmg">${w.damage}</span>
+          <span class="weapon-dmg">${w.damage_str || w.damage || ''}</span>
         </div>
         <div class="weapon-traits">${w.traits.join(' · ')}</div>
         ${w.note ? `<div class="weapon-note-${w.note_type || 'neutral'}">${w.note}</div>` : ''}
@@ -189,11 +189,11 @@ function buildCompanion() {
       </div>
       <!-- HP controls -->
       <div class="comp-hp-controls">
-        <input class="hp-in" type="number" id="haki-amt" placeholder="Amount" min="1"/>
-        <button class="strip-btn dmg" ontouchstart="" onclick="changeHakiHP(-1)">− Damage</button>
-        <button class="strip-btn heal" ontouchstart="" onclick="changeHakiHP(1)">+ Heal</button>
+        <input class="hp-in" type="number" id="haki-amt" placeholder="Amt" min="1"/>
+        <button class="strip-btn dmg" id="haki-amt-dmg" ontouchstart="" onclick="changeHakiHP(-1)">− Damage</button>
+        <button class="strip-btn heal" id="haki-amt-heal" ontouchstart="" onclick="changeHakiHP(1)">+ Heal</button>
         <button class="strip-btn tmp-toggle" id="haki-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('haki')">Temp</button>
-        <button class="strip-btn" ontouchstart="" onclick="setHakiHP(${co.hp_max})">⟳ Rest</button>
+        <button class="strip-btn" id="haki-rest" ontouchstart="" onclick="setHakiHP(${co.hp_max})">⟳ Rest</button>
       </div>
       <!-- Temp HP row (hidden by default) -->
       <div class="tmp-strip" id="haki-tmp-strip" style="display:none">
@@ -228,7 +228,7 @@ function buildCompanion() {
               <div class="stat-stars">${profToStars(co.ac_proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Perception = ${profBonus(co.perception.proficiency, C.meta.level)} prof (${co.perception.proficiency}) + ${fmtMod(at[co.perception.key_attribute])} WIS = ${fmtMod(co.perception.modifier)}">
+              data-tooltip="Perception = ${profBonus(co.perception.proficiency, C.meta.level)} prof (${co.perception.proficiency}) + ${at[co.perception.key_attribute]} WIS = ${fmtMod(co.perception.modifier)}">
               <div class="stat-val" id="haki-live-perc">${fmtMod(co.perception.modifier)}</div>
               <div class="stat-label">Perception</div>
               <div class="stat-stars">${profToStars(co.perception.proficiency)}</div>
@@ -249,19 +249,19 @@ function buildCompanion() {
           <div class="card-title">Saving Throws</div>
           <div class="stat-grid">
             <div class="stat-box has-tooltip"
-              data-tooltip="Fortitude = ${(C.meta.level + (PROF_MAP[sv.fortitude.proficiency]||0))} prof (${sv.fortitude.proficiency}) + ${fmtMod(at.con)} CON = ${fmtMod(sv.fortitude.modifier)}">
+              data-tooltip="Fortitude = ${(C.meta.level + (PROF_MAP[sv.fortitude.proficiency]||0))} prof (${sv.fortitude.proficiency}) + ${at.con} CON = ${fmtMod(sv.fortitude.modifier)}">
               <div class="stat-val" id="haki-live-fort">${fmtMod(sv.fortitude.modifier)}</div>
               <div class="stat-label">Fortitude</div>
               <div class="stat-stars">${profToStars(sv.fortitude.proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Reflex = ${(C.meta.level + (PROF_MAP[sv.reflex.proficiency]||0))} prof (${sv.reflex.proficiency}) + ${fmtMod(at.dex)} DEX = ${fmtMod(sv.reflex.modifier)}">
+              data-tooltip="Reflex = ${(C.meta.level + (PROF_MAP[sv.reflex.proficiency]||0))} prof (${sv.reflex.proficiency}) + ${at.dex} DEX = ${fmtMod(sv.reflex.modifier)}">
               <div class="stat-val" id="haki-live-reflex">${fmtMod(sv.reflex.modifier)}</div>
               <div class="stat-label">Reflex</div>
               <div class="stat-stars">${profToStars(sv.reflex.proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Will = ${(C.meta.level + (PROF_MAP[sv.will.proficiency]||0))} prof (${sv.will.proficiency}) + ${fmtMod(at.wis)} WIS = ${fmtMod(sv.will.modifier)}">
+              data-tooltip="Will = ${(C.meta.level + (PROF_MAP[sv.will.proficiency]||0))} prof (${sv.will.proficiency}) + ${at.wis} WIS = ${fmtMod(sv.will.modifier)}">
               <div class="stat-val" id="haki-live-will">${fmtMod(sv.will.modifier)}</div>
               <div class="stat-label">Will</div>
               <div class="stat-stars">${profToStars(sv.will.proficiency)}</div>
@@ -284,7 +284,7 @@ function buildCompanion() {
           </div>
           <div class="weapon-row" style="margin-top:3px">
             <span class="weapon-atk" id="haki-live-atk-${i}">+${a.attack}</span>
-            <span class="weapon-dmg">${a.damage}</span>
+            <span class="weapon-dmg">${a.damage_str || a.damage || ''}</span>
           </div>
         </div>`).join('')}
       </div>

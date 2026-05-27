@@ -20,7 +20,7 @@ function buildInventory() {
         <div class="inv-add-fields">
           <div class="inv-field-group inv-field-name">
             <label class="inv-field-label">Name *</label>
-            <input class="inv-input" id="inv-new-name" type="text" placeholder="Item name"/>
+            <input class="inv-input" id="inv-new-name" type="text" placeholder="Item name" oninput="document.getElementById('inv-add-btn').disabled=!this.value.trim()"/>
           </div>
           <div class="inv-field-group inv-field-bulk">
             <label class="inv-field-label">Bulk *</label>
@@ -43,7 +43,7 @@ function buildInventory() {
             <input class="inv-input" id="inv-new-ammo-per" type="number" placeholder="10" min="1" style="width:54px"/>
           </div>
         </div>
-        <button class="btn gold" ontouchstart="" onclick="invAddItem()" style="margin-top:8px;width:100%">+ Add Item</button>
+        <button class="btn gold" id="inv-add-btn" ontouchstart="" onclick="invAddItem()" style="margin-top:8px;width:100%" disabled>+ Add Item</button>
       </div>
     </div>
 
@@ -262,21 +262,22 @@ function syncInventory() {
       ammoEl.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic;padding:4px 0">No ammunition tracked</div>';
     } else {
       ammoEl.innerHTML = ammoItems.map(item => {
-        const idx          = S.inventory.indexOf(item);
-        const perBundle    = item.ammoPerBundle ?? 1;
-        const totalShots   = item.quantity * perBundle;
-        const usedShots    = item.used ?? 0;
-        const remaining    = totalShots - usedShots;
-        const pct          = Math.round(remaining / totalShots * 100);
+        const idx        = S.inventory.indexOf(item);
+        const perBundle  = item.ammoPerBundle ?? 1;
+        const totalShots = item.quantity * perBundle;
+        const usedShots  = item.used ?? 0;
+        const remaining  = totalShots - usedShots;
+        const atMax      = usedShots === 0;
+        const atZero     = remaining === 0;
         return '<div class="counter-row">'
              + '<div>'
              + '<span>' + item.name + '</span>'
              + '<span style="font-size:10px;color:var(--text3)"> ' + remaining + ' / ' + totalShots + ' (' + item.quantity + ' bundles × ' + perBundle + ')</span>'
              + '</div>'
              + '<div class="counter-controls">'
-             + '<button class="strip-btn" ontouchstart="" onclick="invUseItem(' + idx + ', 1)">− Use</button>'
-             + '<button class="strip-btn heal" ontouchstart="" onclick="invUseItem(' + idx + ', -1)">+ Return</button>'
-             + '<button class="strip-btn" ontouchstart="" onclick="invResetItem(' + idx + ')">Reset</button>'
+             + '<button class="strip-btn" ontouchstart="" onclick="invUseItem(' + idx + ', 1)"' + (atZero ? ' disabled' : '') + '>− Use</button>'
+             + '<button class="strip-btn heal" ontouchstart="" onclick="invUseItem(' + idx + ', -1)"' + (atMax ? ' disabled' : '') + '>+ Return</button>'
+             + '<button class="strip-btn" ontouchstart="" onclick="invResetItem(' + idx + ')"' + (atMax ? ' disabled' : '') + '>Reset</button>'
              + '</div>'
              + '</div>';
       }).join('');

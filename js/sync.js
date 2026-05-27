@@ -2,6 +2,87 @@
 // SYNC — state → DOM functions
 // ════════════════════════════════════════════
 
+
+// ── Button / input state sync ───────────────────────────────────────
+// Called after any state mutation. Sets disabled on all contextual
+// buttons so their relevance is always visually clear.
+function syncButtonStates() {
+  const S_ = S;  // shorthand
+
+  // ── HP strip ──────────────────────────────────────────────────────
+  const hp    = Math.max(0, S_.hp);
+  const hpMax = C.defenses.hp_max;
+  const tmp   = Math.max(0, S_.tmp_hp || 0);
+  const isDefaultHP = hp === hpMax && tmp === 0
+    && !S_.conditions.length && !S_.prey
+    && Object.values(S_.actions || {}).every(v => !v)
+    && !S_.warden_active;
+
+  setDisabled('hp-amt-dmg',  hp  === 0);       // can't damage at 0
+  setDisabled('hp-amt-heal', hp  >= hpMax);     // can't heal at max
+  setDisabled('saske-rest',  isDefaultHP);      // rest only if something to restore
+
+  // ── Haki HP strip ─────────────────────────────────────────────────
+  const hakiHp    = Math.max(0, S_.haki_hp);
+  const hakiMax   = S_.haki_hp_max;
+  const hakiTmp   = Math.max(0, S_.haki_tmp_hp || 0);
+  const isDefaultHaki = hakiHp === hakiMax && hakiTmp === 0
+    && !S_.haki_conditions.length;
+
+  setDisabled('haki-amt-dmg',  hakiHp  === 0);
+  setDisabled('haki-amt-heal', hakiHp  >= hakiMax);
+  setDisabled('haki-rest',     isDefaultHaki);
+
+  // ── Prey / actions ────────────────────────────────────────────────
+  const preyInput = document.getElementById('prey-input');
+  setDisabled('prey-hunt-btn',  !preyInput?.value?.trim());
+  const anyActionUsed = Object.values(S_.actions || {}).some(v => v);
+  setDisabled('reset-turn-btn', !anyActionUsed);
+
+  // ── Notes ─────────────────────────────────────────────────────────
+  const notesEl = document.getElementById('notes');
+  const notes = notesEl ? notesEl.value.trim() : (S_.notes || '').trim();
+  setDisabled('notes-save',  !notes);
+  setDisabled('notes-clear', !notes);
+
+  // ── Session ───────────────────────────────────────────────────────
+  const isDefault = isDefaultHP
+    && !notes
+    && !(S_.inventory || []).some(i => (i.used || 0) > 0)
+    && !Object.keys(S_.bm_cooldowns || {}).length
+    && !S_.haki_conditions.length
+    && hp === hpMax;
+  setDisabled('session-copy-btn',  isDefault);
+  setDisabled('session-reset-btn', isDefault);
+
+  // ── Conditions: clear buttons ─────────────────────────────────────
+  setDisabled('cond-list-clear-btn',      !(S_.conditions || []).length);
+  setDisabled('haki-cond-list-clear-btn', !(S_.haki_conditions || []).length);
+
+  // ── Medicine: Confirm ─────────────────────────────────────────────
+  const medHasTarget = typeof medState !== 'undefined' && medState.selectedTargets?.size > 0;
+  const medHasTier   = typeof medState !== 'undefined' && medState.tier !== null;
+  const medHasAction = typeof medState !== 'undefined' && medState.action !== null;
+  const medHasRoll   = (() => {
+    const d20El = document.getElementById('med-d20');
+    return d20El && d20El.value !== '';
+  })();
+  const medAssurance = typeof medState !== 'undefined' && medState.useAssurance;
+  const medReady = medHasTarget && medHasTier && medHasAction && (medAssurance || medHasRoll);
+  setDisabled('med-confirm-btn', !medReady);
+
+  // Medicine Clear: active if anything selected
+  const medDirty = medHasTarget || medHasTier || medHasAction
+    || medHasRoll || medAssurance;
+  setDisabled('med-clear-btn', !medDirty);
+}
+
+function setDisabled(id, disabled) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.disabled = disabled;
+}
+
 function syncAll() {
   syncHP();
   syncHakiHP();
@@ -18,6 +99,7 @@ function syncAll() {
   syncInventory();
   syncArmor();
   syncHakiBardingCard();
+  syncButtonStates();
 }
 
 function syncHP() {
@@ -52,6 +134,7 @@ function syncHP() {
 
   // Keep Temp HP button highlighted while temp HP is active
   document.getElementById('saske-tmp-toggle')?.classList.toggle('tmp-toggle-active', tmp > 0);
+  syncButtonStates?.();
 }
 
 function syncHakiHP() {
@@ -79,6 +162,7 @@ function syncHakiHP() {
   if (tmpCurEl) tmpCurEl.textContent = tmp > 0 ? `${tmp} active` : '';
 
   document.getElementById('haki-tmp-toggle')?.classList.toggle('tmp-toggle-active', tmp > 0);
+  syncButtonStates?.();
 }
 
 function syncPrey() {
@@ -101,6 +185,7 @@ function syncActions() {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('used', used);
   });
+  syncButtonStates?.();
 }
 
 function syncWarden() {
@@ -128,6 +213,7 @@ function renderConditions(listId, arr, removeFn) {
 function syncNotes() {
   const el = document.getElementById('notes');
   if (el) el.value = S.notes || '';
+  syncButtonStates?.();
 }
 
 function syncCounters() {
@@ -456,3 +542,9 @@ function applyHakiConditionEffects() {
 
 
 // Notes
+function syncNotesButtons() {
+  const notesEl = document.getElementById('notes');
+  const hasText = !!(notesEl?.value?.trim());
+  setDisabled('notes-save',  !hasText);
+  setDisabled('notes-clear', !hasText);
+}

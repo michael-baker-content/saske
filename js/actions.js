@@ -22,6 +22,7 @@ function changeHP(sign) {
     S.hp = Math.min(C.defenses.hp_max, S.hp + amt);
   }
   saveState(); syncHP();
+  document.getElementById('hp-amt').value = '';
 }
 function setHP(val) { S.hp = Math.min(C.defenses.hp_max, Math.max(0, val)); saveState(); syncHP(); }
 function toggleTmpStrip(who) {
@@ -79,6 +80,8 @@ function changeHakiHP(sign) {
     S.haki_hp = Math.min(S.haki_hp_max, S.haki_hp + amt);
   }
   saveState(); syncHakiHP();
+  const hakiAmt = document.getElementById('haki-amt');
+  if (hakiAmt) hakiAmt.value = '';
 }
 function setHakiHP(val) {
   S.haki_hp = Math.min(S.haki_hp_max, Math.max(0, val));
@@ -138,6 +141,7 @@ function addCondition() {
   const [name, type] = val.split('|');
   S.conditions = upsertCondition(S.conditions, name, type);
   sel.value = '';
+  document.getElementById('cond-select-add-btn').disabled = true;
   saveState(); syncConditions(); applyConditionEffects();
 }
 function removeCondition(name) {
@@ -153,6 +157,7 @@ function addHakiCondition() {
   const [name, type] = val.split('|');
   S.haki_conditions = upsertCondition(S.haki_conditions, name, type);
   sel.value = '';
+  document.getElementById('haki-cond-select-add-btn').disabled = true;
   saveState(); syncHakiConditions(); applyHakiConditionEffects();
 }
 function removeHakiCondition(name) {

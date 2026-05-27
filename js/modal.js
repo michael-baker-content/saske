@@ -20,7 +20,7 @@ function openModal(idx, source) {
     ? (S._condPenalties?.atk || 0)
     : (S._hakiCondPenalties?.atk || 0);
   const mod = weapon.attack - condPen;
-  document.getElementById('modal-atk-mod').value = (mod >= 0 ? '+' : '') + mod;
+  document.getElementById('modal-atk-mod').value = mod;
   document.getElementById('modal-d20').value = '';
   document.getElementById('modal-atk-total').value = '';
 
@@ -221,7 +221,7 @@ function calcResults() {
     const flatVal = parseInt(flatEl.textContent);
     if (!isNaN(flatVal) && flatVal !== 0) {
       dmgTotal += flatVal;
-      breakParts.push((flatVal > 0 ? '+' : '') + flatVal + ' base');
+      breakParts.push(flatVal + ' base');
     }
   }
 

@@ -68,6 +68,7 @@ function medToggleMember(i) {
     if (el) el.classList.toggle('selected', medState.selectedTargets.has(idx));
   });
   medClearResult();
+  syncButtonStates?.();
 }
 
 function medShowWarning(msg) {
@@ -86,6 +87,7 @@ function medSetTier(tier) {
   });
   medUpdateUI();
   medClearResult();
+  syncButtonStates?.();
 }
 
 function medSetAction(action) {
@@ -94,10 +96,12 @@ function medSetAction(action) {
     b.classList.toggle('active', b.dataset.action === action);
   });
   medClearResult();
+  syncButtonStates?.();
 }
 
 function medToggleAssurance() {
   medState.useAssurance = !medState.useAssurance;
+  syncButtonStates?.();
   document.getElementById('med-assurance-tog').classList.toggle('on', medState.useAssurance);
   medUpdateUI();
   medClearResult();
@@ -361,19 +365,11 @@ function medApplyDiceWithProfile(profile, outcome, total, tier, targets) {
       const baseHeal     = diceRolled + profile.bonus;
       const totalHeal    = baseHeal + circumstanceBonus;
 
-      // Breakdown label: show which circumstance bonus applied and why
-      let diceLabel = `${profile.diceCount}d8`;
-      if (profile.bonus > 0) diceLabel += `+${profile.bonus}`;
-      if (circumstanceBonus > 0) {
-        if (robustBonus > medicBonus) {
-          diceLabel += ` +${circumstanceBonus} (Robust Health)`;
-        } else if (medicBonus > robustBonus) {
-          diceLabel += ` +${circumstanceBonus} (Medic Ded.)`;
-        } else {
-          // Equal — either label works; Medic Ded. is the healer's feat
-          diceLabel += ` +${circumstanceBonus} (Medic Ded.)`;
-        }
-      }
+      // Breakdown: rolled + base (tier) + circumstance
+      const circLabel = robustBonus > medicBonus ? 'Robust Health' : 'Medic Ded.';
+      let diceLabel = `${diceRolled}`;
+      if (profile.bonus > 0) diceLabel += ` + ${profile.bonus} (base)`;
+      if (circumstanceBonus > 0) diceLabel += ` + ${circumstanceBonus} (${circLabel})`;
       const robustLabel  = '';
 
       html = `<div class="med-target-row">
@@ -411,8 +407,7 @@ function medApplyDiceWithProfile(profile, outcome, total, tier, targets) {
     syncBMTracker();
   }
 
-  // Deactivate all UI selections after operation completes
-  setTimeout(() => medReset(), 1800);
+  // UI resets when user taps Clear — see med-clear-btn
 }
 
 

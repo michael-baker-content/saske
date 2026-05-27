@@ -16,10 +16,10 @@ function buildInfo() {
   <div class="panel-cols">
     <div class="card card-full">
       <div class="card-title">Session Notes</div>
-      <textarea class="note-area" id="notes" placeholder="Track encounter details, resources spent, important moments…"></textarea>
+      <textarea class="note-area" id="notes" placeholder="Track encounter details, resources spent, important moments…" oninput="syncNotesButtons()"></textarea>
       <div class="row" style="margin-top:8px">
-        <button class="btn" ontouchstart="" onclick="saveNotes()">Save</button>
-        <button class="btn danger" ontouchstart="" onclick="clearNotes()">Clear</button>
+        <button class="btn" ontouchstart="" id="notes-save" ontouchstart="" onclick="saveNotes()">Save</button>
+        <button class="btn danger" ontouchstart="" id="notes-clear" ontouchstart="" onclick="clearNotes()">Clear</button>
         <span class="toast" id="notes-toast">Saved ✓</span>
       </div>
     </div>
@@ -64,12 +64,12 @@ function buildInfo() {
       <div class="card-title">Session</div>
       <div class="session-controls">
         <div class="session-btn-group">
-          <button class="btn session-export-btn" ontouchstart="" onclick="exportSessionReport()">
+          <button class="btn session-export-btn" ontouchstart="" id="session-copy-btn" ontouchstart="" onclick="exportSessionReport()">
             <span class="session-btn-icon">📋</span>
             <span class="session-btn-label">Copy Report</span>
             <span class="session-btn-sub">Markdown to clipboard</span>
           </button>
-          <button class="btn session-reset-btn" ontouchstart="" onclick="confirmResetSession()">
+          <button class="btn session-reset-btn" ontouchstart="" id="session-reset-btn" ontouchstart="" onclick="confirmResetSession()">
             <span class="session-btn-icon">↺</span>
             <span class="session-btn-label">Reset Session</span>
             <span class="session-btn-sub">Revert to defaults</span>

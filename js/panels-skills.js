@@ -78,11 +78,11 @@ function buildSkills() {
         <div class="med-row" id="med-roll-row">
           <span class="med-label">d20 Roll</span>
           <div class="med-d20-wrap">
-            <input class="med-roll-input" type="number" id="med-d20" placeholder="—" min="1" max="20"/>
+            <input class="med-roll-input" type="number" id="med-d20" placeholder="—" min="1" max="20" oninput="syncButtonStates?.()"/>
             <button class="med-d20-clear" ontouchstart="" onclick="clearMedD20()" title="Clear roll">×</button>
           </div>
           <span class="med-roll-label">+</span>
-          <span class="med-mod-display" id="med-mod-display">+${bm.check_modifier}</span>
+          <span class="med-mod-display" id="med-mod-display">${bm.check_modifier}</span>
           <span class="med-roll-label" id="med-total-display" style="color:var(--text3)"></span>
         </div>
 
@@ -92,10 +92,11 @@ function buildSkills() {
           <div id="med-dice-grid" class="med-dice-cell-grid"></div>
         </div>
 
-        <!-- Row 7: Apply + Confirm -->
+        <!-- Row 7: Apply + Confirm + Clear -->
         <div class="med-action-row">
           <button class="med-tier-btn" id="med-apply-btn" style="display:none" ontouchstart="" onclick="medApplyDice()">Apply</button>
-          <button class="med-calc-btn med-calc-inline" ontouchstart="" onclick="medCalculate()">Confirm</button>
+          <button class="med-calc-btn med-calc-inline" id="med-confirm-btn" ontouchstart="" onclick="medCalculate()">Confirm</button>
+          <button class="med-tier-btn med-clear-btn" id="med-clear-btn" ontouchstart="" onclick="medReset()" title="Clear and reset">Clear</button>
         </div>
 
         <!-- Row 8: Result -->
@@ -115,14 +116,16 @@ function buildSkills() {
       <div class="card-title">Battle Medicine Quick Ref</div>
       <div class="bm-quick-ref-grid">
         <div>
-          <div class="medic-row"><span>Check</span><span class="medic-val">Medicine +${bm.check_modifier}</span></div>
+          <div class="medic-row"><span>Check</span><span class="medic-val">Medicine ${bm.check_modifier}</span></div>
           <div class="medic-row" style="border-bottom:none;padding-bottom:2px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">EXPERT DC 20</span></div>
-          <div class="medic-row"><span>Success</span><span class="medic-val">2d8+18 HP <span style="font-size:10px;color:var(--text3)">(self)</span> / 2d8+15 HP</span></div>
-          <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8+18 HP <span style="font-size:10px;color:var(--text3)">(self)</span> / 4d8+15 HP</span></div>
+          <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 10 + C.B.</span></div>
+          <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 10 + C.B.</span></div>
           <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">MASTER DC 30</span></div>
-          <div class="medic-row"><span>Success</span><span class="medic-val">2d8+40 HP</span></div>
-          <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8+40 HP</span></div>
-          <div class="medic-row"><span style="color:var(--text3);font-size:11px">+10 tier · circumstance: max(Medic Ded., Robust Health)</span></div>
+          <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 30 + C.B.</span></div>
+          <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 30 + C.B.</span></div>
+          <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">LEGENDARY DC 40</span></div>
+          <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 50 + C.B.</span></div>
+          <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 50 + C.B.</span></div>
         </div>
         <div>
           <div class="medic-row" style="border-top:1px solid var(--border);padding-top:6px"><span>Crit Failure</span><span class="medic-val" style="color:var(--red-b)">1d8 dmg</span></div>

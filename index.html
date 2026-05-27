@@ -48,11 +48,11 @@
     </div>
     <!-- HP controls row -->
     <div class="hp-strip">
-      <input class="hp-in" type="number" id="hp-amt" placeholder="Amount" min="1"/>
-      <button class="strip-btn dmg"  ontouchstart="" onclick="changeHP(-1)">− Damage</button>
-      <button class="strip-btn heal" ontouchstart="" onclick="changeHP(1)">+ Heal</button>
-      <button class="strip-btn tmp-toggle" id="saske-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('saske')" title="Temporary HP">Temp HP</button>
-      <button class="strip-btn"      ontouchstart="" onclick="fullRest()" title="Full Rest">⟳ Rest</button>
+      <input class="hp-in" type="number" id="hp-amt" placeholder="Amt" min="1"/>
+      <button class="strip-btn dmg"  id="hp-amt-dmg" ontouchstart="" onclick="changeHP(-1)">− Damage</button>
+      <button class="strip-btn heal" id="hp-amt-heal" ontouchstart="" onclick="changeHP(1)">+ Heal</button>
+      <button class="strip-btn tmp-toggle" id="saske-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('saske')" title="Temporary HP">+ Temp</button>
+      <button class="strip-btn"      id="saske-rest" ontouchstart="" onclick="fullRest()" title="Full Rest">⟳ Rest</button>
     </div>
     <!-- Temp HP row (hidden by default) -->
     <div class="tmp-strip" id="saske-tmp-strip" style="display:none">
