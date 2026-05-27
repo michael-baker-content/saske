@@ -117,7 +117,7 @@ function buildCombat() {
       <div class="weapon-card clickable" ontouchstart="" onclick="openModal(${i},'player')">
         <div class="weapon-row">
           <div class="weapon-name">${w.name}</div>
-          <span style="font-size:10px;color:var(--text3)">tap to roll ▸</span>
+          <span class="tap-hint">tap to roll ▸</span>
         </div>
         <div class="weapon-row" style="margin-top:3px">
           <span class="weapon-atk" id="live-weapon-atk-${i}">+${w.attack}</span>
@@ -280,7 +280,7 @@ function buildCompanion() {
         <div class="weapon-card clickable" ontouchstart="" onclick="openModal(${i},'companion')">
           <div class="weapon-row">
             <div class="weapon-name">${a.name}${a.traits?.length ? ' <span style="font-size:10px;color:var(--text3)">(' + a.traits.join(', ') + ')</span>' : ''}</div>
-            <span style="font-size:10px;color:var(--text3)">tap to roll ▸</span>
+            <span class="tap-hint">tap to roll ▸</span>
           </div>
           <div class="weapon-row" style="margin-top:3px">
             <span class="weapon-atk" id="haki-live-atk-${i}">+${a.attack}</span>

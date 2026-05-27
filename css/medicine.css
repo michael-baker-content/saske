@@ -354,6 +354,7 @@
   border-color: var(--amber); color: var(--amber);
   background: rgba(240,164,48,0.12);
   font-weight: 700;
+  padding: 6px 14px;
 }
 #med-apply-btn:active { background: rgba(240,164,48,0.25); }
 
@@ -372,5 +373,3 @@
 }
 .med-clear-btn:hover { border-color: var(--text3); color: var(--text); }
 
-/* Apply button padding */
-#med-apply-btn { padding: 6px 14px; }

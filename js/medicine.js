@@ -23,9 +23,11 @@ const MED_TIERS = {
   legendary: { dc: 40, bonusHP: 50, medicDedBonus: 15, label: 'Legendary DC 40', minAssurance: false },
 };
 
-// Saske's medicine modifier
-const SASKE_MED_MOD = 19;
-const ASSURANCE_RESULT = 24; // 10 + Master proficiency bonus (14)
+const MED_MAX_TARGETS = 4; // Ward Medic cap
+
+// These read from C — must be accessed after fetch completes, not at parse time
+function getMedMod()        { return C.assurance?.skill === 'Medicine' ? C.skills.find(s => s.name === 'Medicine')?.modifier ?? 19 : 19; }
+function getAssuranceResult() { return C.assurance?.result ?? 24; }
 
 // Medicine tool state (not persisted — resets on page load)
 let medState = {
@@ -48,8 +50,6 @@ function buildMedicineTool() {
 
   medUpdateUI();
 }
-
-const MED_MAX_TARGETS = 4; // Ward Medic cap
 
 function medToggleMember(i) {
   if (medState.selectedTargets.has(i)) {
@@ -118,13 +118,13 @@ function medUpdateUI() {
   // Assurance validity note
   if (assuranceNote) {
     if (medState.useAssurance) {
-      const beats = ASSURANCE_RESULT >= tier.dc;
+      const beats = getAssuranceResult() >= tier.dc;
       assuranceNote.textContent = beats
-        ? `Auto-result ${ASSURANCE_RESULT} — beats DC ${tier.dc} ✓`
-        : `Auto-result ${ASSURANCE_RESULT} — does not meet DC ${tier.dc} ✗`;
+        ? `Auto-result ${getAssuranceResult()} — beats DC ${tier.dc} ✓`
+        : `Auto-result ${getAssuranceResult()} — does not meet DC ${tier.dc} ✗`;
       assuranceNote.className = 'med-assurance-note ' + (beats ? 'valid' : 'invalid');
     } else {
-      assuranceNote.textContent = `Auto-result: ${ASSURANCE_RESULT}`;
+      assuranceNote.textContent = `Auto-result: ${getAssuranceResult()}`;
       assuranceNote.className = 'med-assurance-note';
     }
   }
@@ -135,7 +135,7 @@ function medUpdateUI() {
   if (d20Input && totalDisplay) {
     const d20val = parseInt(d20Input.value);
     if (!isNaN(d20val)) {
-      const total = d20val + SASKE_MED_MOD;
+      const total = d20val + getMedMod();
       totalDisplay.textContent = `= ${total}`;
     } else {
       totalDisplay.textContent = '';
@@ -199,10 +199,10 @@ function medReset() {
 }
 
 function medGetCheckTotal() {
-  if (medState.useAssurance) return ASSURANCE_RESULT;
+  if (medState.useAssurance) return getAssuranceResult();
   const d20 = parseInt(document.getElementById('med-d20').value);
   if (isNaN(d20)) return null;
-  return d20 + SASKE_MED_MOD;
+  return d20 + getMedMod();
 }
 
 function medGetOutcome(total, dc) {
@@ -244,8 +244,8 @@ function medCalculate() {
 
   const tier = MED_TIERS[medState.tier];
 
-  if (medState.useAssurance && ASSURANCE_RESULT < tier.dc) {
-    medShowWarning(`Assurance (${ASSURANCE_RESULT}) does not meet DC ${tier.dc}. Use a rolled check for this tier.`);
+  if (medState.useAssurance && getAssuranceResult() < tier.dc) {
+    medShowWarning(`Assurance (${getAssuranceResult()}) does not meet DC ${tier.dc}. Use a rolled check for this tier.`);
     return;
   }
 
@@ -301,7 +301,7 @@ function medShowOutcomeBanner(outcome, total, tier) {
   if (badge) { badge.textContent = labels[outcome]; badge.className = 'med-result-outcome ' + outcome; }
   if (summary) summary.textContent = medState.useAssurance
     ? `Assurance ${total} vs DC ${tier.dc}`
-    : `Roll ${total - SASKE_MED_MOD} + ${SASKE_MED_MOD} = ${total} vs DC ${tier.dc}`;
+    : `Roll ${total - getMedMod()} + ${getMedMod()} = ${total} vs DC ${tier.dc}`;
   const area = document.getElementById('med-result-area');
   if (area) area.classList.add('show');
 }

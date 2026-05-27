@@ -117,13 +117,13 @@ function buildSkills() {
       <div class="bm-quick-ref-grid">
         <div>
           <div class="medic-row"><span>Check</span><span class="medic-val">Medicine ${bm.check_modifier}</span></div>
-          <div class="medic-row" style="border-bottom:none;padding-bottom:2px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">EXPERT DC 20</span></div>
+          <div class="medic-row" style="border-bottom:none;padding-bottom:2px"><span class="tier-header">EXPERT DC 20</span></div>
           <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 10 + C.B.</span></div>
           <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 10 + C.B.</span></div>
-          <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">MASTER DC 30</span></div>
+          <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span class="tier-header">MASTER DC 30</span></div>
           <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 30 + C.B.</span></div>
           <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 30 + C.B.</span></div>
-          <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span style="font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.06em">LEGENDARY DC 40</span></div>
+          <div class="medic-row" style="border-bottom:none;padding-bottom:2px;margin-top:6px"><span class="tier-header">LEGENDARY DC 40</span></div>
           <div class="medic-row"><span>Success</span><span class="medic-val">2d8 + 50 + C.B.</span></div>
           <div class="medic-row"><span>Crit Success</span><span class="medic-val">4d8 + 50 + C.B.</span></div>
         </div>

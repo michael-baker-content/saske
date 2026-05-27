@@ -192,35 +192,6 @@ function syncArmor() {
 function syncInventory() {
   if (!S.inventory) return;
 
-  // ── Bulk calculation helper ──────────────────────────────────────
-  // PF2e rules: — = negligible (always —), L = light (10L = 1 bulk),
-  // nL = n light units per item, numeric = multiplies normally
-  function calcBulk(bulkStr, qty) {
-    const q = qty ?? 1;
-    const b = (bulkStr ?? '—').trim();
-    if (b === '—' || b === '-') return '—';
-
-    // Handle L and nL (e.g. 'L', '2L', '3L')
-    const lMatch = b.match(/^(\d*)L$/i);
-    if (lMatch) {
-      const perItem = lMatch[1] === '' ? 1 : parseInt(lMatch[1]);
-      const totalL  = q * perItem;
-      if (totalL < 10) return totalL + 'L';
-      const bulk = Math.floor(totalL / 10);
-      const remL = totalL % 10;
-      return remL === 0 ? String(bulk) : bulk + ' (' + remL + 'L)';
-    }
-
-    // Numeric bulk
-    const n = parseFloat(b);
-    if (!isNaN(n)) {
-      const total = n * q;
-      return Number.isInteger(total) ? String(total) : String(total);
-    }
-
-    return b; // unrecognised — return as-is
-  }
-
   // ── Inventory table ──────────────────────────────────────────────
   const listEl = document.getElementById('inv-list');
   if (listEl) {

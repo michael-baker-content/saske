@@ -241,24 +241,7 @@ function exportSessionReport() {
   const inv = S.inventory || [];
   lines.push('## Inventory');
   if (inv.length) {
-    // Bulk helper (mirrors panels-inventory.js calcBulk)
-    const calcBulkExport = (bulkStr, qty) => {
-      const q = qty ?? 1;
-      const b = (bulkStr ?? '—').trim();
-      if (b === '—' || b === '-') return '—';
-      const lMatch = b.match(/^(\d*)L$/i);
-      if (lMatch) {
-        const perItem = lMatch[1] === '' ? 1 : parseInt(lMatch[1]);
-        const totalL  = q * perItem;
-        if (totalL < 10) return totalL + 'L';
-        const bulk = Math.floor(totalL / 10);
-        const remL = totalL % 10;
-        return remL === 0 ? String(bulk) : bulk + ' (' + remL + 'L)';
-      }
-      const n = parseFloat(b);
-      if (!isNaN(n)) { const t = n * q; return String(Number.isInteger(t) ? t : t); }
-      return b;
-    };
+
 
     // Standard (non-ammo) items
     const stdItems = inv.filter(i => !i.ammo);
@@ -267,7 +250,7 @@ function exportSessionReport() {
       lines.push('|---|---|---|---|');
       stdItems.forEach(item => {
         const qty  = item.quantity != null ? item.quantity : '—';
-        const bulk = calcBulkExport(item.bulk, item.quantity ?? 1);
+        const bulk = calcBulk(item.bulk, item.quantity ?? 1);
         lines.push('| ' + item.name + ' | ' + qty + ' | ' + bulk + ' | ' + (item.notes || '') + ' |');
       });
       lines.push('');

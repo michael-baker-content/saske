@@ -310,12 +310,12 @@ input[type=number] {
 }
 .session-export-btn { border-color: var(--blue); }
 .session-export-btn:hover { background: var(--blue-muted); }
+.session-export-btn .session-btn-label { color: var(--blue); }
 .session-reset-btn { border-color: var(--red); }
 .session-reset-btn:hover { background: rgba(176,48,48,0.12); }
+.session-reset-btn .session-btn-label { color: var(--red-b); }
 .session-btn-icon { font-size: 20px; line-height: 1; }
 .session-btn-label { font-size: 12px; font-weight: 700; color: var(--text); }
-.session-export-btn .session-btn-label { color: var(--blue); }
-.session-reset-btn .session-btn-label { color: var(--red-b); }
 .session-btn-sub { font-size: 10px; color: var(--text3); }
 .session-confirm {
   background: rgba(176,48,48,0.1); border: 1px solid var(--red);

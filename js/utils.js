@@ -67,3 +67,22 @@ function parseDamage(dmgStr) {
   }
   return parts;
 }
+
+// ── Bulk calculation (PF2e rules: 10L = 1 bulk, — is negligible) ──
+function calcBulk(bulkStr, qty) {
+  const q = qty ?? 1;
+  const b = (bulkStr ?? '—').trim();
+  if (b === '—' || b === '-') return '—';
+  const lMatch = b.match(/^(\d*)L$/i);
+  if (lMatch) {
+    const perItem = lMatch[1] === '' ? 1 : parseInt(lMatch[1]);
+    const totalL  = q * perItem;
+    if (totalL < 10) return totalL + 'L';
+    const bulk = Math.floor(totalL / 10);
+    const remL = totalL % 10;
+    return remL === 0 ? String(bulk) : bulk + ' (' + remL + 'L)';
+  }
+  const n = parseFloat(b);
+  if (!isNaN(n)) { const t = n * q; return Number.isInteger(t) ? String(t) : String(t); }
+  return b;
+}
