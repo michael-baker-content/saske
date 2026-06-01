@@ -18,6 +18,8 @@ const DEFAULT_STATE = {
   arrow_used: 0,  // kept for legacy; quantity items now use S.inventory[].used
   tmp_hp: 0,
   bm_cooldowns: {},
+  diseases:     [],
+  haki_diseases: [],
   haki_barding: true,
   inventory: null,    // null = seed from C.inventory on first load
   notes: ''

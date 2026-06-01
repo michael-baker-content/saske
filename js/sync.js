@@ -99,6 +99,8 @@ function syncAll() {
   syncInventory();
   syncArmor();
   syncHakiBardingCard();
+  syncDiseases();
+  syncHakiDiseases();
   syncButtonStates();
 }
 
@@ -305,9 +307,14 @@ function syncHakiSkills() {
     tipParts.push((attrVal >= 0 ? '+' : '') + attrVal + ' ' + attrName);
     if (bardingOn && bp !== 0) tipParts.push(bp + ' barding');
     const tip   = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (effMod >= 0 ? '+' : '') + effMod;
-    const mod   = (effMod >= 0 ? '+' : '') + effMod;
-    const style = (bardingOn && bp !== 0) ? ' style="color:var(--red-b)"' : '';
-    return '<div class="skill-row has-tooltip" data-tooltip="' + tip + '">'
+    const skillPen = (S._condPenalties?.skills?.[s.name] || 0);
+    const effectiveMod = effMod - skillPen;
+    const mod   = (effectiveMod >= 0 ? '+' : '') + effectiveMod;
+    const isPenalised = (bardingOn && bp !== 0) || skillPen > 0;
+    const style = isPenalised ? ' style="color:var(--red-b)"' : '';
+    const penNote = skillPen > 0 ? ` − ${skillPen} (condition)` : '';
+    const fullTip = tip + penNote;
+    return '<div class="skill-row has-tooltip" data-tooltip="' + fullTip + '">'
          + '<div class="skill-name-wrap">'
          + '<span>' + s.name + '</span>'
          + '<span class="skill-prof-badge">' + s.proficiency + (bp !== 0 ? ' · barding' : '') + '</span>'
@@ -321,7 +328,7 @@ function syncHakiSkills() {
 // Computes penalty totals from active conditions and updates live stat elements.
 // PF2e rules used:
 //   Clumsy N   → −N to Dex-based attacks, AC, Reflex, Acrobatics, Stealth, Thievery
-//   Enfeebled N → −N to Str-based attacks (minimal impact for Saske)
+//   Enfeebled N → −N to Str-based attacks/damage, Athletics
 //   Drained N  → −N to Fort; max HP = base − N×level
 //   Frightened N→ −N to all attacks, saves, perception, skills
 //   Sickened N  → −N to all attacks, saves, perception, skills
@@ -340,6 +347,7 @@ function applyConditionEffects() {
   const cs   = S.conditions;
 
   let acPen=0, reflexPen=0, fortPen=0, willPen=0, percPen=0, atkPen=0;
+  let enfeebledPen=0;
   let flatFooted=false;
   let effectNotes=[];
 
@@ -354,6 +362,10 @@ function applyConditionEffects() {
     if (nm.startsWith('Drained')) {
       fortPen += n;
       effectNotes.push(`Drained ${n}: −${n} Fort; max HP −${n * C.meta.level} (shown above)`);
+    }
+    if (nm.startsWith('Enfeebled')) {
+      enfeebledPen += n;
+      effectNotes.push(`Enfeebled ${n}: −${n} Athletics, STR-based attacks/damage`);
     }
     if (nm.startsWith('Frightened')) {
       acPen += n; reflexPen += n; fortPen += n; willPen += n; percPen += n; atkPen += n;
@@ -464,7 +476,23 @@ function applyConditionEffects() {
   }
 
   // Store effective penalties for use in the attack modal
-  S._condPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, perc: percPen, atk: atkPen };
+  // Build per-skill penalty map
+  const skillPenMap = {};
+  C.skills.forEach(s => {
+    let pen = 0;
+    if (s.key_attribute === 'str') pen += enfeebledPen;
+    if (s.key_attribute === 'dex') pen += acPen - (flatFooted ? 2 : 0); // clumsy already in acPen
+    // Sickened/Frightened apply to all skills (already in atkPen for attacks; skills need separate track)
+    const sickN = condRank((cs.find(c=>c.name.startsWith('Sickened'))||{name:''}).name);
+    const frightN = condRank((cs.find(c=>c.name.startsWith('Frightened'))||{name:''}).name);
+    pen += sickN + frightN;
+    if (pen > 0) skillPenMap[s.name] = pen;
+  });
+
+  S._condPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, perc: percPen, atk: atkPen, skills: skillPenMap };
+
+  // Re-render skills if on skills tab (penalties affect displayed values)
+  if (typeof currentTab !== 'undefined' && currentTab === 2) buildSkills?.();
 }
 // ─── Haki Condition Effect Engine ────────────────────────────────
 function applyHakiConditionEffects() {
@@ -547,4 +575,78 @@ function syncNotesButtons() {
   const hasText = !!(notesEl?.value?.trim());
   setDisabled('notes-save',  !hasText);
   setDisabled('notes-clear', !hasText);
+}
+
+// ── Disease tracker ───────────────────────────────────────────────
+function syncDiseases() {
+  const el = document.getElementById('disease-list');
+  if (!el) return;
+  const diseases = S.diseases || [];
+  if (!diseases.length) {
+    el.innerHTML = '<div class="disease-empty">No active diseases</div>';
+    return;
+  }
+  el.innerHTML = diseases.map((d, idx) => {
+    const timerVal  = d.turnsRemaining ?? '';
+    const timerSet  = d.turnsRemaining !== null && d.turnsRemaining !== undefined;
+    return '<div class="disease-row">'
+      + '<div class="disease-row-main">'
+      +   '<span class="disease-name">' + d.name + '</span>'
+      +   '<div class="disease-controls">'
+      +     '<span class="disease-label">Stage</span>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseUpdate(' + idx + ',\'stage\',Math.max(1,' + (d.stage-1) + '))" '
+      +       + (d.stage <= 1 ? 'disabled' : '') + '>−</button>'
+      +     '<span class="disease-stage">' + d.stage + ' / ' + d.maxStage + '</span>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseUpdate(' + idx + ',\'stage\',Math.min(' + d.maxStage + ',' + (d.stage+1) + '))" '
+      +       + (d.stage >= d.maxStage ? 'disabled' : '') + '>+</button>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseRemove(' + idx + ')" style="margin-left:4px;color:var(--red-b);border-color:var(--red)">✕</button>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="disease-row-timer">'
+      +   '<span class="disease-label">Countdown</span>'
+      +   '<input class="disease-timer-input" type="number" min="0" placeholder="—" value="' + timerVal + '" '
+      +     'onchange="diseaseUpdate(' + idx + ',\'turnsRemaining\',this.value===\'\'?null:parseInt(this.value))" />'
+      +   '<div class="disease-tick-btns">'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseTick(' + idx + ',-1)" ' + (!timerSet || d.turnsRemaining <= 0 ? 'disabled' : '') + '>−</button>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseTick(' + idx + ',1)">+</button>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Haki Disease tracker ──────────────────────────────────────────
+function syncHakiDiseases() {
+  const el = document.getElementById('haki-disease-list');
+  if (!el) return;
+  const diseases = S.haki_diseases || [];
+  if (!diseases.length) {
+    el.innerHTML = '<div class="disease-empty">No active diseases</div>';
+    return;
+  }
+  el.innerHTML = diseases.map((d, idx) => {
+    const timerVal = d.turnsRemaining ?? '';
+    const timerSet = d.turnsRemaining !== null && d.turnsRemaining !== undefined;
+    return '<div class="disease-row">'
+      + '<div class="disease-row-main">'
+      +   '<span class="disease-name">' + d.name + '</span>'
+      +   '<div class="disease-controls">'
+      +     '<span class="disease-label">Stage</span>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseUpdate(' + idx + ',\'stage\',Math.max(1,' + (d.stage-1) + '))" ' + (d.stage <= 1 ? 'disabled' : '') + '>−</button>'
+      +     '<span class="disease-stage">' + d.stage + ' / ' + d.maxStage + '</span>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseUpdate(' + idx + ',\'stage\',Math.min(' + d.maxStage + ',' + (d.stage+1) + '))" ' + (d.stage >= d.maxStage ? 'disabled' : '') + '>+</button>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseRemove(' + idx + ')" style="margin-left:4px;color:var(--red-b);border-color:var(--red)">✕</button>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="disease-row-timer">'
+      +   '<span class="disease-label">Countdown</span>'
+      +   '<input class="disease-timer-input" type="number" min="0" placeholder="—" value="' + timerVal + '" '
+      +     'onchange="hakiDiseaseUpdate(' + idx + ',\'turnsRemaining\',this.value===\'\'?null:parseInt(this.value))" />'
+      +   '<div class="disease-tick-btns">'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseTick(' + idx + ',-1)" ' + (!timerSet || d.turnsRemaining <= 0 ? 'disabled' : '') + '>−</button>'
+      +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseTick(' + idx + ',1)">+</button>'
+      +   '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
 }

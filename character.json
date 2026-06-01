@@ -714,22 +714,50 @@
     }
   },
   "conditions_list": {
-    "negative": [
+    "negative_ranked": [
+      {
+        "name": "Clumsy",
+        "maxLevel": 4
+      },
+      {
+        "name": "Drained",
+        "maxLevel": 4
+      },
+      {
+        "name": "Dying",
+        "maxLevel": 4
+      },
+      {
+        "name": "Doomed",
+        "maxLevel": 3
+      },
+      {
+        "name": "Enfeebled",
+        "maxLevel": 4
+      },
+      {
+        "name": "Frightened",
+        "maxLevel": 4
+      },
+      {
+        "name": "Sickened",
+        "maxLevel": 4
+      },
+      {
+        "name": "Slowed",
+        "maxLevel": 3
+      },
+      {
+        "name": "Stunned",
+        "maxLevel": 4
+      }
+    ],
+    "negative_simple": [
       "Blinded",
-      "Clumsy 1",
-      "Clumsy 2",
       "Confused",
       "Dazzled",
       "Deafened",
-      "Doomed 1",
-      "Drained 1",
-      "Drained 2",
-      "Dying 1",
-      "Dying 2",
-      "Enfeebled 1",
       "Fatigued",
-      "Frightened 1",
-      "Frightened 2",
       "Grabbed",
       "Immobilized",
       "Paralyzed",
@@ -737,9 +765,6 @@
       "Persistent Fire",
       "Prone",
       "Restrained",
-      "Sickened 1",
-      "Slowed 1",
-      "Stunned 1",
       "Unconscious"
     ],
     "positive": [

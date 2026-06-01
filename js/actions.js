@@ -136,11 +136,14 @@ function toggleWarden() {
 // Only one rank per family is allowed; adding a higher rank replaces lower.
 
 function addCondition() {
+  const result = condBuildName('cond-select');
+  if (!result) return;
+  S.conditions = upsertCondition(S.conditions, result.name, result.type);
+  // Reset select and level input, re-disable Add
   const sel = document.getElementById('cond-select');
-  const val = sel.value; if (!val) return;
-  const [name, type] = val.split('|');
-  S.conditions = upsertCondition(S.conditions, name, type);
   sel.value = '';
+  const lvl = document.getElementById('cond-select-level');
+  if (lvl) lvl.style.display = 'none';
   document.getElementById('cond-select-add-btn').disabled = true;
   saveState(); syncConditions(); applyConditionEffects();
 }
@@ -152,11 +155,13 @@ function clearConditions() { S.conditions = []; saveState(); syncConditions(); a
 
 // Conditions (Haki)
 function addHakiCondition() {
+  const result = condBuildName('haki-cond-select');
+  if (!result) return;
+  S.haki_conditions = upsertCondition(S.haki_conditions, result.name, result.type);
   const sel = document.getElementById('haki-cond-select');
-  const val = sel.value; if (!val) return;
-  const [name, type] = val.split('|');
-  S.haki_conditions = upsertCondition(S.haki_conditions, name, type);
   sel.value = '';
+  const lvl = document.getElementById('haki-cond-select-level');
+  if (lvl) lvl.style.display = 'none';
   document.getElementById('haki-cond-select-add-btn').disabled = true;
   saveState(); syncHakiConditions(); applyHakiConditionEffects();
 }
@@ -355,4 +360,82 @@ function clearNotes() {
   const el = document.getElementById('notes');
   if (el) el.value = '';
   saveState();
+}
+// ── Diseases ──────────────────────────────────────────────────────
+function diseaseAdd() {
+  const nameEl = document.getElementById('disease-name-input');
+  const name = nameEl?.value.trim();
+  if (!name) return;
+  if (!S.diseases) S.diseases = [];
+  S.diseases.push({ name, stage: 1, maxStage: 4, turnsRemaining: null, notes: '' });
+  nameEl.value = '';
+  document.getElementById('disease-add-btn').disabled = true;
+  saveState(); syncDiseases(); syncButtonStates?.();
+}
+
+function diseaseUpdate(idx, field, value) {
+  if (!S.diseases?.[idx]) return;
+  S.diseases[idx][field] = value;
+  saveState(); syncDiseases();
+}
+
+function diseaseRemove(idx) {
+  if (!S.diseases) return;
+  S.diseases.splice(idx, 1);
+  saveState(); syncDiseases(); syncButtonStates?.();
+}
+
+function diseaseTick(idx, delta) {
+  const d = S.diseases?.[idx];
+  if (!d) return;
+  const cur = d.turnsRemaining;
+  if (cur === null || cur === undefined) return;
+  d.turnsRemaining = Math.max(0, cur + delta);
+  if (d.turnsRemaining === 0 && d.stage > 1) {
+    d.stage = Math.max(1, d.stage - 1);
+    d.turnsRemaining = null;
+  } else if (d.turnsRemaining === 0 && d.stage === 1) {
+    // Disease clears
+    S.diseases.splice(idx, 1);
+  }
+  saveState(); syncDiseases();
+}
+
+// ── Haki Diseases ─────────────────────────────────────────────────
+function hakiDiseaseAdd() {
+  const nameEl = document.getElementById('haki-disease-name-input');
+  const name = nameEl?.value.trim();
+  if (!name) return;
+  if (!S.haki_diseases) S.haki_diseases = [];
+  S.haki_diseases.push({ name, stage: 1, maxStage: 4, turnsRemaining: null, notes: '' });
+  nameEl.value = '';
+  document.getElementById('haki-disease-add-btn').disabled = true;
+  saveState(); syncHakiDiseases(); syncButtonStates?.();
+}
+
+function hakiDiseaseUpdate(idx, field, value) {
+  if (!S.haki_diseases?.[idx]) return;
+  S.haki_diseases[idx][field] = value;
+  saveState(); syncHakiDiseases();
+}
+
+function hakiDiseaseRemove(idx) {
+  if (!S.haki_diseases) return;
+  S.haki_diseases.splice(idx, 1);
+  saveState(); syncHakiDiseases(); syncButtonStates?.();
+}
+
+function hakiDiseaseTick(idx, delta) {
+  const d = S.haki_diseases?.[idx];
+  if (!d) return;
+  const cur = d.turnsRemaining;
+  if (cur === null || cur === undefined) return;
+  d.turnsRemaining = Math.max(0, cur + delta);
+  if (d.turnsRemaining === 0 && d.stage > 1) {
+    d.stage = Math.max(1, d.stage - 1);
+    d.turnsRemaining = null;
+  } else if (d.turnsRemaining === 0 && d.stage === 1) {
+    S.haki_diseases.splice(idx, 1);
+  }
+  saveState(); syncHakiDiseases();
 }

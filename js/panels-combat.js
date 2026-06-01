@@ -129,6 +129,15 @@ function buildCombat() {
     </div>
 
     ${buildConditionCard('cond-list','cond-select','addCondition','clearConditions','Conditions','card-full')}
+
+    <div class="card card-full">
+      <div class="card-title">Diseases</div>
+      <div id="disease-list"></div>
+      <div class="disease-add-row">
+        <input class="text-in" id="disease-name-input" type="text" placeholder="Disease name…" oninput="document.getElementById('disease-add-btn').disabled=!this.value.trim()"/>
+        <button class="btn gold" id="disease-add-btn" ontouchstart="" onclick="diseaseAdd()" disabled>Add</button>
+      </div>
+    </div>
   </div>
   `;
 
@@ -271,7 +280,7 @@ function buildCompanion() {
       </div>
     </div>
 
-    <!-- ── Attacks + Skills ── -->
+    <!-- ── Attacks + Equipped Barding ── -->
     <div class="panel-cols">
 
       <div class="card">
@@ -289,22 +298,36 @@ function buildCompanion() {
         </div>`).join('')}
       </div>
 
-      <div class="card">
-        <div class="card-title">Skills</div>
-        <div class="skill-grid" id="haki-skill-grid">${skillsHtml}</div>
+      <div class="card" id="haki-barding-card">
+        <div class="card-title">Equipped Barding</div>
+        <div id="haki-armor-grid"></div>
       </div>
 
     </div>
 
-    <!-- ── Equipped Barding ── -->
-    <div class="card" id="haki-barding-card">
-      <div class="card-title">Equipped Barding</div>
-      <div id="haki-armor-grid"></div>
+    <!-- ── Conditions + Diseases ── -->
+    <div class="panel-cols">
+
+      ${buildConditionCard('haki-cond-list','haki-cond-select','addHakiCondition','clearHakiConditions','Companion Conditions','','haki-cond-effects-summary')}
+
+      <div class="card">
+        <div class="card-title">Companion Diseases</div>
+        <div id="haki-disease-list"></div>
+        <div class="disease-add-row">
+          <input class="text-in" id="haki-disease-name-input" type="text" placeholder="Disease name…" oninput="document.getElementById('haki-disease-add-btn').disabled=!this.value.trim()"/>
+          <button class="btn gold" id="haki-disease-add-btn" ontouchstart="" onclick="hakiDiseaseAdd()" disabled>Add</button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- ── Conditions + Special Abilities ── -->
+    <!-- ── Skills + Special Abilities ── -->
     <div class="panel-cols">
-      ${buildConditionCard('haki-cond-list','haki-cond-select','addHakiCondition','clearHakiConditions','Companion Conditions','','haki-cond-effects-summary')}
+
+      <div class="card">
+        <div class="card-title">Skills</div>
+        <div class="skill-grid" id="haki-skill-grid">${skillsHtml}</div>
+      </div>
 
       <div class="card">
         <div class="card-title">Special Abilities</div>
@@ -314,6 +337,7 @@ function buildCompanion() {
           <div class="ability-desc">${a.description}</div>
         </div>`).join('')}
       </div>
+
     </div>
 
   `;

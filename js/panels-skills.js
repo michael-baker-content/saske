@@ -16,14 +16,18 @@ function buildSkills() {
     if (pb > 0) tipParts.push(profNum + ' prof (' + s.proficiency + ')');
     tipParts.push((attrVal >= 0 ? '+' : '') + attrVal + ' ' + attrName);
     if (s.item_bonus) tipParts.push('+' + s.item_bonus + ' item');
-    const tip  = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (s.modifier >= 0 ? '+' : '') + s.modifier;
-    const mod  = (s.modifier >= 0 ? '+' : '') + s.modifier;
+    const baseTip  = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (s.modifier >= 0 ? '+' : '') + s.modifier;
+    const skillPen = (S._condPenalties?.skills?.[s.name] || 0);
+    const effectiveMod = s.modifier - skillPen;
+    const mod      = (effectiveMod >= 0 ? '+' : '') + effectiveMod;
+    const style    = skillPen > 0 ? ' style="color:var(--red-b)"' : '';
+    const tip      = skillPen > 0 ? baseTip + ` − ${skillPen} (condition)` : baseTip;
     return '<div class="skill-row has-tooltip" data-tooltip="' + tip + '">'
          + '<div class="skill-name-wrap">'
          + '<span>' + s.name + '</span>'
          + '<span class="skill-prof-badge">' + s.proficiency + '</span>'
          + '</div>'
-         + '<span class="skill-mod">' + mod + '</span>'
+         + '<span class="skill-mod"' + style + '>' + mod + '</span>'
          + '</div>';
   }).join('');
 

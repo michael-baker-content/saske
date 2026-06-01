@@ -169,3 +169,37 @@
 /* ── Utility ── */
 .tap-hint  { font-size: 10px; color: var(--text3); }
 .tier-header { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 0.06em; }
+
+/* ── Condition level input (shown for ranked conditions) ── */
+.cond-level-input {
+  width: 44px;
+  font-size: 16px;
+  text-align: center;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 3px 2px;
+}
+.cond-add-row { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+
+/* ── Disease tracker ── */
+.disease-empty { font-size: 12px; color: var(--text3); font-style: italic; padding: 4px 0; }
+.disease-add-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.disease-row {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 5px; padding: 8px 10px; margin-bottom: 6px;
+}
+.disease-row:last-child { margin-bottom: 0; }
+.disease-row-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.disease-row-timer { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.disease-name { font-size: 13px; font-weight: 700; color: var(--red-b); }
+.disease-label { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.disease-stage { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 600; color: var(--amber); min-width: 30px; text-align: center; }
+.disease-controls { display: flex; align-items: center; gap: 4px; }
+.disease-tick-btns { display: flex; gap: 3px; }
+.disease-timer-input {
+  width: 52px; font-size: 16px; text-align: center;
+  background: var(--bg4); border: 1px solid var(--border2);
+  border-radius: 3px; color: var(--text); padding: 2px 4px;
+}
