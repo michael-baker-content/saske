@@ -21,15 +21,17 @@ fetch('character.json')
         name:          i.name,
         bulk:          i.bulk,
         quantity:      i.quantity      ?? 1,
+        description:   i.description   ?? '',
         notes:         i.notes         ?? '',
         used:          0,
         ammo:          i.ammo          ?? false,
         ammoPerBundle: i.ammoPerBundle ?? undefined,
       }));
     } else {
-      // Migrate existing state items that predate the ammo field
+      // Migrate existing state items that predate the ammo/description fields
       S.inventory.forEach(item => {
         if (item.ammo === undefined) item.ammo = false;
+        if (item.description === undefined) item.description = '';
       });
     }
     saveState();

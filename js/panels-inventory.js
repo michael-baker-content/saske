@@ -22,6 +22,10 @@ function buildInventory() {
             <label class="inv-field-label">Name *</label>
             <input class="inv-input" id="inv-new-name" type="text" placeholder="Item name" oninput="document.getElementById('inv-add-btn').disabled=!this.value.trim()"/>
           </div>
+          <div class="inv-field-group inv-field-desc" style="grid-column:1/-1">
+            <label class="inv-field-label">Description</label>
+            <input class="inv-input" id="inv-new-desc" type="text" placeholder="Brief description…"/>
+          </div>
           <div class="inv-field-group inv-field-bulk">
             <label class="inv-field-label">Bulk *</label>
             <input class="inv-input" id="inv-new-bulk" type="text" placeholder="1 / L / —"/>
@@ -57,7 +61,7 @@ function buildInventory() {
   syncInventory();
   syncArmor();
 
-  ['inv-new-name','inv-new-bulk','inv-new-qty','inv-new-notes','inv-new-ammo-per'].forEach(id => {
+  ['inv-new-name','inv-new-bulk','inv-new-qty','inv-new-desc','inv-new-notes','inv-new-ammo-per'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') invAddItem(); });
   });
@@ -81,6 +85,7 @@ function invOpenModal(idx) {
   document.getElementById('inv-edit-name').value  = item.name;
   document.getElementById('inv-edit-bulk').value  = item.bulk;
   document.getElementById('inv-edit-qty').value   = item.quantity ?? '';
+  document.getElementById('inv-edit-desc').value  = item.description || '';
   document.getElementById('inv-edit-notes').value = item.notes || '';
   const ammoTog    = document.getElementById('inv-edit-ammo-tog');
   const ammoFields = document.getElementById('inv-edit-ammo-fields');
@@ -112,6 +117,7 @@ function invSaveEdit() {
   item.bulk     = document.getElementById('inv-edit-bulk').value.trim() || item.bulk;
   const qtyRaw  = document.getElementById('inv-edit-qty').value.trim();
   item.quantity = qtyRaw ? parseInt(qtyRaw) : null;
+  item.description = document.getElementById('inv-edit-desc').value.trim();
   item.notes    = document.getElementById('inv-edit-notes').value.trim();
   const isAmmo  = document.getElementById('inv-edit-ammo-tog').classList.contains('on');
   item.ammo     = isAmmo;
@@ -205,7 +211,7 @@ function syncInventory() {
         const ammoTag = item.ammo ? '<span class="inv-ammo-tag">ammo</span>' : '';
         return '<tr class="inv-tr">'
              + '<td class="inv-td inv-td-name">'
-             +   '<button class="inv-name-btn" ontouchstart="" onclick="invOpenModal(' + idx + ')">' + item.name + '</button>'
+             +   '<button class="inv-name-btn has-tooltip" data-tooltip="' + (item.description || item.name) + '" ontouchstart="" onclick="invOpenModal(' + idx + ')">' + item.name + '</button>'
              +   ammoTag
              +   (item.notes ? '<div class="inv-item-notes">' + item.notes + '</div>' : '')
              + '</td>'
@@ -268,12 +274,12 @@ function invAddItem() {
   if (!bulk) { document.getElementById('inv-new-bulk').focus(); return; }
 
   const quantity = qtyRaw ? parseInt(qtyRaw) : null;
-  const item = { name, bulk, quantity, notes: notes || '', used: 0, ammo: isAmmo };
+  const item = { name, bulk, quantity, description: desc || '', notes: notes || '', used: 0, ammo: isAmmo };
   if (isAmmo) item.ammoPerBundle = perRaw ? parseInt(perRaw) : 1;
   S.inventory.push(item);
   saveState();
 
-  ['inv-new-name','inv-new-bulk','inv-new-qty','inv-new-notes','inv-new-ammo-per'].forEach(id => {
+  ['inv-new-name','inv-new-bulk','inv-new-qty','inv-new-desc','inv-new-notes','inv-new-ammo-per'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });

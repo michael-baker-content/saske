@@ -390,174 +390,199 @@
       "bulk": "1",
       "ammo": false,
       "notes": "Crit spec: immobilized",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Ranged weapon. Deadly d10 on crit. 60 ft range, reload 0."
     },
     {
       "name": "+1 Striking Shortsword",
       "bulk": "L",
       "ammo": false,
       "notes": "Crit spec: off-guard",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Melee weapon. Agile, Finesse. Versatile S. MAP \u22124/\u22128."
     },
     {
       "name": "+1 Striking Sling",
       "bulk": "-",
       "ammo": false,
       "notes": "Crit spec: stunned",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Ranged weapon. Propulsive. Reload 1."
     },
     {
       "name": "+1 Nightstick",
       "bulk": "L",
       "ammo": false,
       "notes": "Crit spec: forced movement",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Melee weapon. Crit spec: forced movement."
     },
     {
       "name": "+1 Leather Armor",
       "bulk": "1",
       "ammo": false,
       "notes": "+2 item bonus to armor class",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Light armor. +2 AC, Dex cap 4, no Stealth penalty."
     },
     {
       "name": "Buckler",
       "bulk": "L",
       "ammo": false,
       "notes": "+1 AC, 3 Hard, BT 6 (3)",
-      "quantity": 1
+      "quantity": 1,
+      "description": "+1 AC when raised. Hardness 3, BT 6. Reaction to raise."
     },
     {
       "name": "Bracers of Missile Deflection",
       "bulk": "L",
       "ammo": false,
       "notes": "+2 circumstance bonus (1/day)",
-      "quantity": 1
+      "quantity": 1,
+      "description": "+2 circumstance bonus to AC vs ranged attacks, once per day."
     },
     {
       "name": "Barding (Heavy)",
       "bulk": "3",
       "ammo": false,
       "notes": "equipped by Haki",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Haki's armor. +3 AC, Dex cap 3, \u22123 check penalty to Stealth/Acrobatics/Athletics."
     },
     {
       "name": "Healer's Toolkit",
       "bulk": "1",
       "ammo": false,
       "notes": "required for most Med skills",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Required for Treat Wounds, Battle Medicine, and most Medicine skill actions."
     },
     {
       "name": "Healer's Gloves",
       "bulk": "L",
       "ammo": false,
       "notes": "+1 item bonus to Medicine",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Invested. +1 item bonus to Medicine checks."
     },
     {
       "name": "Thieves' Toolkit (Infiltrator)",
       "bulk": "L",
       "ammo": false,
       "notes": "+1 item bonus to Pick Locks and Disable Devices",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Infiltrator grade. +1 item bonus to Pick Locks and Disable Devices."
     },
     {
       "name": "Replacement Pick",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "Fix thieves' toolkit without an action",
-      "quantity": 6
+      "quantity": 6,
+      "description": "Fix a broken Thieves' Toolkit as a free action. Negligible bulk."
     },
     {
       "name": "Bracelet of Dashing",
       "bulk": "L",
       "ammo": false,
       "notes": "+1 item bonus to Acrobatics; spell",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Invested. +1 item bonus to Acrobatics. Spell: Sudden Dash."
     },
     {
       "name": "Obsidian Goggles",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "+1 item bonus to sight Perception; spell",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Invested. +1 item bonus to sight-based Perception. Spell: Dark Vision."
     },
     {
       "name": "Necklace of Frozen Lava",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "1 big + 1 small attack left",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Charged item. 1 large + 1 small fire/cold attack remaining."
     },
     {
       "name": "Skeleton Key",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "+4 status bonus spell to open door / etc.",
-      "quantity": 1
+      "quantity": 1,
+      "description": "+4 status bonus to Open a Lock; attempt once even without thieves' tools."
     },
     {
       "name": "Feather Step Stone",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "equipped: ignore terrain 1 turn",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Invested. Once per day: ignore difficult terrain for 1 turn."
     },
     {
       "name": "Emerald Grasshopper",
       "bulk": "\u2014",
       "ammo": false,
       "notes": "Allows fancy leap action",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Activate: perform a powerful leap action."
     },
     {
       "name": "Adventurer's Pack",
       "bulk": "1",
       "ammo": false,
-      "quantity": 1
+      "quantity": 1,
+      "description": "Backpack, bedroll, 10 chalk, flint & steel, 50 ft rope, 2 weeks rations, waterskin, 5 torches."
     },
     {
       "name": "Healing Potion (minor)",
       "bulk": "L",
       "ammo": false,
       "notes": "restores 1d8 hp",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Restore 1d8 HP. Potency: minor (level 1)."
     },
     {
       "name": "Healing Potion (moderate)",
       "bulk": "L",
       "ammo": false,
       "notes": "restores 3d8+10 hp",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Restore 3d8+10 HP. Potency: moderate (level 6)."
     },
     {
       "name": "Holy Water",
       "bulk": "L",
       "ammo": false,
       "notes": "1d6 spirit dmg + 1 spirit splash dmg",
-      "quantity": 5
+      "quantity": 5,
+      "description": "Splash weapon. 1d6 spirit damage + 1 spirit splash vs undead/fiends."
     },
     {
       "name": "Antidote (lesser)",
       "bulk": "L",
       "ammo": false,
       "notes": "+2 item bonus vs poisons (6hrs)",
-      "quantity": 2
+      "quantity": 2,
+      "description": "+2 item bonus to Fortitude saves vs poison for 6 hours."
     },
     {
       "name": "Darkvision Elixir (moderate)",
       "bulk": "L",
       "ammo": false,
       "notes": "1 hour",
-      "quantity": 2
+      "quantity": 2,
+      "description": "Grants darkvision for 1 hour."
     },
     {
       "name": "Ghost Charge (moderate)",
       "bulk": "L",
       "ammo": false,
       "notes": "+1 item,  2d8 vit. dmg / 2 splash, enfeebled",
-      "quantity": 1
+      "quantity": 1,
+      "description": "Alchemical bomb. +1 item bonus, 2d8 vitality damage, 2 splash, Enfeebled 1 on hit."
     },
     {
       "name": "Arrows",
@@ -565,7 +590,8 @@
       "ammo": true,
       "notes": "32 remaining",
       "quantity": 4,
-      "ammoPerBundle": 10
+      "ammoPerBundle": 10,
+      "description": "Standard ammunition for shortbow. 10 per bundle."
     },
     {
       "name": "Sling Bullets",
@@ -573,7 +599,8 @@
       "quantity": 1,
       "notes": "8 remaining",
       "ammo": true,
-      "ammoPerBundle": 10
+      "ammoPerBundle": 10,
+      "description": "Standard ammunition for sling. 10 per bundle."
     }
   ],
   "companion": {
@@ -581,7 +608,7 @@
     "type": "Bird",
     "stage": "Mature",
     "size": "Medium",
-    "hp_max": 64,
+    "hp_max": 68,
     "ac": 26,
     "ac_details": "Heavy Barding",
     "saving_throws": {
@@ -711,7 +738,8 @@
       "modifier": 15,
       "proficiency": "Expert",
       "key_attribute": "wis"
-    }
+    },
+    "hp_formula": "4 (bird ancestry) + (6 + 2 CON) \u00d7 8 (level) = 68"
   },
   "conditions_list": {
     "negative_ranked": [
