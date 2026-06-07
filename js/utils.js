@@ -86,3 +86,15 @@ function calcBulk(bulkStr, qty) {
   if (!isNaN(n)) { const t = n * q; return Number.isInteger(t) ? String(t) : String(t); }
   return b;
 }
+
+// ── Inventory description lookup ──────────────────────────────────
+// Returns the description (and optionally notes) for an inventory item
+// by name, pulling from current session state.
+function invDescHtml(name) {
+  const item = (S.inventory || []).find(i => i.name === name);
+  if (!item) return '';
+  const parts = [];
+  if (item.description) parts.push('<span class="section-inv-desc">' + item.description + '</span>');
+  if (item.notes)       parts.push('<span class="section-inv-notes">' + item.notes + '</span>');
+  return parts.length ? '<div class="section-inv-info">' + parts.join('') + '</div>' : '';
+}

@@ -20,6 +20,9 @@ const DEFAULT_STATE = {
   bm_cooldowns: {},
   diseases:     [],
   haki_diseases: [],
+  party_conditions: {},
+  feat_descriptions: {},
+  item_effects:      [],
   haki_barding: true,
   inventory: null,    // null = seed from C.inventory on first load
   notes: ''

@@ -373,3 +373,70 @@
 }
 .med-clear-btn:hover { border-color: var(--text3); color: var(--text); }
 
+
+/* ── Treat Condition section (merged into BM Cooldowns card) ── */
+.tc-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.tc-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+.tc-header-sub {
+  font-size: 10px;
+  color: var(--text3);
+  font-weight: 400;
+}
+.tc-note {
+  font-size: 10px;
+  color: var(--text3);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.tc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tc-member-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 1fr 1fr;
+  align-items: center;
+  gap: 4px;
+}
+.tc-member-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+}
+.tc-cond-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tc-cond-label {
+  font-size: 9px;
+  color: var(--text3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tc-cond-controls {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.tc-cond-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+  min-width: 16px;
+  text-align: center;
+}
+.tc-cond-val.tc-active { color: var(--red-b); }

@@ -168,6 +168,7 @@ function syncArmor() {
 
   armorEl.innerHTML = `
     <div class="armor-name">${arm.name}</div>
+    ${invDescHtml(arm.name)}
     <div class="armor-stats">
       <div class="armor-stat-group">
         <div class="armor-tile has-tooltip" data-tooltip="AC = 10 base + ${acProf} prof (${C.defenses.ac_proficiency}) + ${effDex} DEX${dex > arm.dex_cap ? ' (capped from +' + dex + ')' : ''} + ${arm.ac_bonus} item bonus">

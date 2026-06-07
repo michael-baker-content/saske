@@ -149,11 +149,21 @@ function buildSkills() {
       </div>
       <div class="bm-tracker-grid" id="bm-tracker-grid"></div>
       <div class="bm-add-row" id="bm-add-row"></div>
+
+      <div class="tc-section">
+        <div class="tc-header">
+          <span class="card-title" style="margin:0">Treat Condition</span>
+          <span class="tc-header-sub">Clumsy · Enfeebled · Sickened</span>
+        </div>
+        <div class="tc-note">Medicine +${bm.check_modifier} · Counteract check vs condition source DC · ◆◆ requires healer's tools</div>
+        <div class="tc-grid" id="treat-cond-grid"></div>
+      </div>
     </div>
   </div>
   `;
   buildMedicineTool();
   buildBMTracker();
   syncBMTracker();
+  syncPartyConditions();
 }
 

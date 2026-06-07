@@ -52,11 +52,26 @@ function buildInfo() {
         <div class="feat-group">
           <div class="feat-group-title">${type}</div>
           ${feats.filter(f=>f.type===type).map(f=>`
-          <div class="feat-row">
+          <div class="feat-row has-tooltip${(S.feat_descriptions||{})[f.name] ? ' feat-described' : ''}"
+               data-tooltip="${(S.feat_descriptions||{})[f.name] || 'Tap to add description'}"
+               ontouchstart="" onclick="openFeatModal('${f.name.replace(/'/g,"\\'")}')">
             <span>${f.name}${f.note?`<span class="feat-note">${f.note}</span>`:''}</span>
             <span class="feat-type">Lvl ${f.level||'—'}</span>
           </div>`).join('')}
         </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card card-full">
+      <div class="card-title">Item Effects</div>
+      <div id="item-effects-list"></div>
+      <div class="ie-add-row">
+        <div class="ie-add-fields">
+          <input class="text-in" id="ie-name-input" type="text" placeholder="Effect name…"
+            oninput="document.getElementById('ie-add-btn').disabled=!this.value.trim()"/>
+          <input class="text-in" id="ie-source-input" type="text" placeholder="Source item…"/>
+        </div>
+        <button class="btn gold" id="ie-add-btn" ontouchstart="" onclick="ieAdd()" disabled>Add</button>
       </div>
     </div>
 
@@ -89,5 +104,6 @@ function buildInfo() {
   </div>
   `;
   document.getElementById('notes').addEventListener('input', () => { S.notes = document.getElementById('notes').value; saveState(); });
+  syncItemEffects?.();
 }
 

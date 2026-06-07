@@ -49,15 +49,15 @@
     <!-- HP controls row -->
     <div class="hp-strip">
       <input class="hp-in" type="number" id="hp-amt" placeholder="Amt" min="1"/>
-      <button class="strip-btn dmg"  id="hp-amt-dmg" ontouchstart="" onclick="changeHP(-1)">− Damage</button>
+      <button class="strip-btn dmg"  id="hp-amt-dmg" ontouchstart="" onclick="changeHP(-1)">− Dmg</button>
       <button class="strip-btn heal" id="hp-amt-heal" ontouchstart="" onclick="changeHP(1)">+ Heal</button>
       <button class="strip-btn tmp-toggle" id="saske-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('saske')" title="Temporary HP">+ Temp</button>
       <button class="strip-btn"      id="saske-rest" ontouchstart="" onclick="fullRest()" title="Full Rest">⟳ Rest</button>
     </div>
     <!-- Temp HP row (hidden by default) -->
     <div class="tmp-strip" id="saske-tmp-strip" style="display:none">
-      <span class="tmp-label">Temp HP</span>
-      <input class="hp-in" type="number" id="tmp-amt" placeholder="0" min="0" value="0" style="width:60px"/>
+      <span class="tmp-label">Temp</span>
+      <input class="hp-in" type="number" id="tmp-amt" placeholder="0" min="0" value="0"/>
       <button class="strip-btn tmp-set" ontouchstart="" onclick="setTmpHP()">Set</button>
       <button class="strip-btn tmp-clr" ontouchstart="" onclick="clearTmpHP()">Clear</button>
       <span class="tmp-current" id="tmp-cur" style="margin-left:auto"></span>
@@ -205,5 +205,29 @@
 <script src="js/panels-info.js"></script>
 <script src="js/panels-inventory.js"></script>
 <script src="js/navigation.js"></script>
+
+<!-- Feat description modal -->
+<div id="feat-modal-backdrop" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:16px" ontouchstart="" onclick="featModalClose(event)">
+  <div id="feat-modal" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.5);overflow:hidden">
+    <div class="modal-header">
+      <span class="modal-title" id="feat-modal-title">Feat</span>
+      <button class="modal-close" ontouchstart="" onclick="featModalCloseDirect()">✕</button>
+    </div>
+    <div style="padding:14px 16px 16px">
+      <div id="feat-source-row" style="display:none;margin-bottom:10px">
+        <label style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Source</label>
+        <input class="inv-input" id="feat-source-input" type="text" placeholder="Source item…" style="margin-top:4px"/>
+      </div>
+      <label style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Description <span style="font-weight:400;text-transform:none;color:var(--text3)">(hover text)</span></label>
+      <textarea id="feat-desc-input" class="note-area" style="margin-top:6px;min-height:100px;font-size:16px"
+        placeholder="Add notes about this feat — mechanics, uses, interactions…"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn gold" style="flex:1" ontouchstart="" onclick="saveFeatDesc()">Save</button>
+        <button class="btn" ontouchstart="" onclick="clearFeatDesc()" style="color:var(--text3)">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

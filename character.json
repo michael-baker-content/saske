@@ -364,7 +364,7 @@
       "level": 6
     },
     {
-      "name": "Additional Lore",
+      "name": "Treat Condition",
       "type": "Skill",
       "level": 8
     },
@@ -730,7 +730,8 @@
       "check_penalty": -3,
       "strength_req": 0,
       "bulk": "3",
-      "note": "Barding check penalty applies to Stealth, Acrobatics, Athletics"
+      "note": "Barding check penalty applies to Stealth, Acrobatics, Athletics",
+      "inv_name": "Barding (Heavy)"
     },
     "ac_proficiency": "Trained",
     "ac_base": 10,

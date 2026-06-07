@@ -124,6 +124,7 @@ function buildCombat() {
           <span class="weapon-dmg">${w.damage_str || w.damage || ''}</span>
         </div>
         <div class="weapon-traits">${w.traits.join(' · ')}</div>
+        ${invDescHtml(w.name)}
         ${w.note ? `<div class="weapon-note-${w.note_type || 'neutral'}">${w.note}</div>` : ''}
       </div>`).join('')}
     </div>
@@ -197,17 +198,17 @@ function buildCompanion() {
         </div>
       </div>
       <!-- HP controls -->
-      <div class="comp-hp-controls">
+      <div class="hp-strip">
         <input class="hp-in" type="number" id="haki-amt" placeholder="Amt" min="1"/>
-        <button class="strip-btn dmg" id="haki-amt-dmg" ontouchstart="" onclick="changeHakiHP(-1)">− Damage</button>
+        <button class="strip-btn dmg" id="haki-amt-dmg" ontouchstart="" onclick="changeHakiHP(-1)">− Dmg</button>
         <button class="strip-btn heal" id="haki-amt-heal" ontouchstart="" onclick="changeHakiHP(1)">+ Heal</button>
-        <button class="strip-btn tmp-toggle" id="haki-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('haki')">Temp</button>
+        <button class="strip-btn tmp-toggle" id="haki-tmp-toggle" ontouchstart="" onclick="toggleTmpStrip('haki')">+ Temp</button>
         <button class="strip-btn" id="haki-rest" ontouchstart="" onclick="setHakiHP(${co.hp_max})">⟳ Rest</button>
       </div>
       <!-- Temp HP row (hidden by default) -->
       <div class="tmp-strip" id="haki-tmp-strip" style="display:none">
-        <span class="tmp-label">Temp HP</span>
-        <input class="hp-in" type="number" id="haki-tmp-amt" placeholder="0" min="0" value="0" style="width:46px"/>
+        <span class="tmp-label">Temp</span>
+        <input class="hp-in" type="number" id="haki-tmp-amt" placeholder="0" min="0" value="0"/>
         <button class="strip-btn tmp-set" ontouchstart="" onclick="setHakiTmpHP()">Set</button>
         <button class="strip-btn tmp-clr" ontouchstart="" onclick="clearHakiTmpHP()">Clear</button>
         <span class="tmp-current" id="haki-tmp-cur" style="margin-left:auto"></span>

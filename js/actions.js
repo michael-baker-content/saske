@@ -8,8 +8,7 @@
 
 // HP
 function changeHP(sign) {
-  const amt = parseInt(document.getElementById('hp-amt').value) || 0;
-  if (!amt) return;
+  const amt = parseInt(document.getElementById('hp-amt').value) || 1;
   if (sign < 0) {
     // Damage: drain temp HP first, then real HP
     let dmg = amt;
@@ -68,8 +67,7 @@ function fullRest() {
 
 // Haki HP
 function changeHakiHP(sign) {
-  const amt = parseInt(document.getElementById('haki-amt')?.value) || 0;
-  if (!amt) return;
+  const amt = parseInt(document.getElementById('haki-amt')?.value) || 1;
   if (sign < 0) {
     let dmg = amt;
     const tmpAbsorb = Math.min(S.haki_tmp_hp, dmg);
@@ -281,6 +279,24 @@ function exportSessionReport() {
     lines.push('');
   }
 
+  // ── Party Conditions (Treat Condition) ──
+  const pc = S.party_conditions || {};
+  const tcConds = ['clumsy', 'enfeebled', 'sickened'];
+  const anyPartyConditions = PARTY.some(m => {
+    const mc = pc[m.name] || {};
+    return tcConds.some(c => (mc[c] || 0) > 0);
+  });
+  if (anyPartyConditions) {
+    lines.push('## Party Conditions (Treat Condition)');
+    lines.push('| Member | Clumsy | Enfeebled | Sickened |');
+    lines.push('|---|---|---|---|');
+    PARTY.forEach(m => {
+      const mc = pc[m.name] || {};
+      lines.push('| ' + m.name + ' | ' + (mc.clumsy||0) + ' | ' + (mc.enfeebled||0) + ' | ' + (mc.sickened||0) + ' |');
+    });
+    lines.push('');
+  }
+
   // ── Battle Medicine Cooldowns ──
   const cds = S.bm_cooldowns || {};
   const cdEntries = Object.entries(cds);
@@ -439,3 +455,157 @@ function hakiDiseaseTick(idx, delta) {
   }
   saveState(); syncHakiDiseases();
 }
+
+// ── Party Condition Tracking (Treat Condition feat) ───────────────
+const TC_CONDITIONS = ['clumsy', 'enfeebled', 'sickened'];
+const TC_MAX = 4;
+
+function setPartyCondition(memberName, condName, delta) {
+  if (!S.party_conditions) S.party_conditions = {};
+  if (!S.party_conditions[memberName]) {
+    S.party_conditions[memberName] = { clumsy: 0, enfeebled: 0, sickened: 0 };
+  }
+  const cur = S.party_conditions[memberName][condName] ?? 0;
+  const next = Math.max(0, Math.min(TC_MAX, cur + delta));
+  S.party_conditions[memberName][condName] = next;
+
+  // For Saske: pipe into S.conditions
+  const member = PARTY.find(p => p.name === memberName);
+  if (member?.isSelf) {
+    _syncMemberCondition(memberName, condName, next, false);
+  }
+  // For Haki: pipe into S.haki_conditions
+  if (member?.isHaki) {
+    _syncMemberCondition(memberName, condName, next, true);
+  }
+
+  saveState();
+  syncAll();
+}
+
+function _syncMemberCondition(memberName, condName, value, isHaki) {
+  const arr = isHaki ? S.haki_conditions : S.conditions;
+  const family = condName.charAt(0).toUpperCase() + condName.slice(1);
+  // Remove existing entry for this family
+  const filtered = arr.filter(c => !c.name.toLowerCase().startsWith(condName));
+  if (value > 0) {
+    filtered.push({ name: family + ' ' + value, type: 'bad' });
+  }
+  if (isHaki) S.haki_conditions = filtered;
+  else S.conditions = filtered;
+}
+
+// ── Feat description modal ────────────────────────────────────────
+let _featModalName = null;
+
+function openFeatModal(featName) {
+  _featModalName = featName;
+  const desc = (S.feat_descriptions || {})[featName] || '';
+  document.getElementById('feat-modal-title').textContent = featName;
+  document.getElementById('feat-desc-input').value = desc;
+  // Hide source row (feat modals don't need it)
+  const srcRow = document.getElementById('feat-source-row');
+  if (srcRow) srcRow.style.display = 'none';
+  const bd = document.getElementById('feat-modal-backdrop');
+  bd.style.display = 'flex';
+  setTimeout(() => document.getElementById('feat-desc-input').focus(), 80);
+}
+
+function saveFeatDesc() {
+  if (!_featModalName) return;
+  if (!S.feat_descriptions) S.feat_descriptions = {};
+  const val = document.getElementById('feat-desc-input').value.trim();
+  S.feat_descriptions[_featModalName] = val;
+  saveState();
+  featModalCloseDirect();
+  buildInfo?.();  // re-render feats so tooltip updates
+}
+
+function clearFeatDesc() {
+  if (!_featModalName) return;
+  if (!S.feat_descriptions) S.feat_descriptions = {};
+  delete S.feat_descriptions[_featModalName];
+  saveState();
+  featModalCloseDirect();
+  buildInfo?.();
+}
+
+function featModalClose(e) {
+  if (e.target.id === 'feat-modal-backdrop') featModalCloseDirect();
+}
+function featModalCloseDirect() {
+  document.getElementById('feat-modal-backdrop').style.display = 'none';
+  _featModalName = null;
+  _ieModalIdx = null;
+}
+
+// ── Item Effects ──────────────────────────────────────────────────
+function ieAdd() {
+  const nameEl   = document.getElementById('ie-name-input');
+  const sourceEl = document.getElementById('ie-source-input');
+  const name   = nameEl?.value.trim();
+  const source = sourceEl?.value.trim();
+  if (!name) return;
+  if (!S.item_effects) S.item_effects = [];
+  S.item_effects.push({ name, source: source || '', description: '' });
+  nameEl.value = '';
+  if (sourceEl) sourceEl.value = '';
+  document.getElementById('ie-add-btn').disabled = true;
+  saveState(); syncItemEffects();
+}
+
+function ieRemove(idx) {
+  S.item_effects?.splice(idx, 1);
+  saveState(); syncItemEffects();
+}
+
+let _ieModalIdx = null;
+
+function openIEModal(idx) {
+  const effect = S.item_effects?.[idx];
+  if (!effect) return;
+  _ieModalIdx = idx;
+  document.getElementById('feat-modal-title').textContent = effect.name;
+  document.getElementById('feat-desc-input').value = effect.description || '';
+  // Show source row for item effects
+  const srcRow = document.getElementById('feat-source-row');
+  const srcInput = document.getElementById('feat-source-input');
+  if (srcRow) srcRow.style.display = 'block';
+  if (srcInput) srcInput.value = effect.source || '';
+  document.getElementById('feat-modal-backdrop').style.display = 'flex';
+  setTimeout(() => document.getElementById('feat-desc-input').focus(), 80);
+}
+
+// Override saveFeatDesc/clearFeatDesc to handle item effects when _ieModalIdx is set
+const _origSaveFeatDesc = saveFeatDesc;
+saveFeatDesc = function() {
+  if (_ieModalIdx !== null) {
+    const val    = document.getElementById('feat-desc-input').value.trim();
+    const srcVal = document.getElementById('feat-source-input')?.value.trim() || '';
+    if (S.item_effects?.[_ieModalIdx]) {
+      S.item_effects[_ieModalIdx].description = val;
+      S.item_effects[_ieModalIdx].source      = srcVal;
+    }
+    saveState();
+    featModalCloseDirect();
+    syncItemEffects();
+    _ieModalIdx = null;
+  } else {
+    _origSaveFeatDesc();
+  }
+};
+
+const _origClearFeatDesc = clearFeatDesc;
+clearFeatDesc = function() {
+  if (_ieModalIdx !== null) {
+    if (S.item_effects?.[_ieModalIdx]) {
+      S.item_effects[_ieModalIdx].description = '';
+    }
+    saveState();
+    featModalCloseDirect();
+    syncItemEffects();
+    _ieModalIdx = null;
+  } else {
+    _origClearFeatDesc();
+  }
+};

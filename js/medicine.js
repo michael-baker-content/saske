@@ -9,7 +9,7 @@
 // Party data: name, level (for Robust Health), hasRobustHealth
 const PARTY = [
   { name: 'Saske',  level: 8, robust: true,  isSelf: true  },
-  { name: 'Haki',   level: 8, robust: false, isSelf: false },
+  { name: 'Haki',   level: 8, robust: false, isSelf: false, isHaki: true },
   { name: 'Cadoc',  level: 8, robust: true,  isSelf: false },
   { name: 'Jemand', level: 8, robust: true,  isSelf: false },
   { name: 'Afi',    level: 8, robust: false, isSelf: false },

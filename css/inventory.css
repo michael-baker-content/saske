@@ -156,10 +156,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 6px;
 }
 .comp-avatar img {
   width: 100%; height: 100%;
   object-fit: cover; object-position: center top;
+  border-radius: 50%;
+  border: 2px solid var(--blue-dim);
   display: block;
 }
 .comp-info {
@@ -182,26 +185,10 @@
   font-size: 10px;
   color: var(--text3);
 }
-.comp-hp-controls {
-  display: flex;
-  align-items: stretch;
-  gap: 3px;
-  padding: 5px 8px 6px;
-  border-top: 1px solid var(--border);
-}
-.comp-hp-controls .hp-in {
-  flex: 0 0 46px;
-  width: 46px;
-}
-.comp-hp-controls .strip-btn {
-  flex: 1;
-  padding: 5px 2px;
-  text-align: center;
-  min-width: 0;
-}
-.comp-hp-controls .strip-btn.dmg {
-  flex: 1.3;
-}
+
+
+
+
 
 /* ── Dark scrollbars ── */
 /* Webkit (Chrome, Safari, Edge) */

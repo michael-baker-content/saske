@@ -101,6 +101,8 @@ function syncAll() {
   syncHakiBardingCard();
   syncDiseases();
   syncHakiDiseases();
+  syncPartyConditions();
+  syncItemEffects();
   syncButtonStates();
 }
 
@@ -159,6 +161,9 @@ function syncHakiHP() {
 
   const curEl = document.getElementById('haki-cur');
   if (curEl) curEl.textContent = tmp > 0 ? `${hp}+${tmp}` : hp;
+
+  const maxLblEl = document.getElementById('haki-max-lbl');
+  if (maxLblEl) maxLblEl.textContent = max;
 
   const tmpCurEl = document.getElementById('haki-tmp-cur');
   if (tmpCurEl) tmpCurEl.textContent = tmp > 0 ? `${tmp} active` : '';
@@ -245,6 +250,7 @@ function syncHakiBardingCard() {
 
   armorEl.innerHTML = `
     <div class="armor-name">${bard.name}</div>
+    ${invDescHtml(bard.inv_name || bard.name)}
     <div class="armor-stats">
       <div class="armor-stat-group">
         <div class="armor-tile has-tooltip"
@@ -647,6 +653,54 @@ function syncHakiDiseases() {
       +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseTick(' + idx + ',1)">+</button>'
       +   '</div>'
       + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Party Condition Grid (Treat Condition) ────────────────────────
+function syncPartyConditions() {
+  const el = document.getElementById('treat-cond-grid');
+  if (!el) return;
+  const pc = S.party_conditions || {};
+  const conds = ['clumsy', 'enfeebled', 'sickened'];
+
+  el.innerHTML = PARTY.map(member => {
+    const mc = pc[member.name] || { clumsy: 0, enfeebled: 0, sickened: 0 };
+    return '<div class="tc-member-row">'
+      + '<div class="tc-member-name">' + member.name + '</div>'
+      + conds.map(cond => {
+          const val = mc[cond] || 0;
+          const label = cond.charAt(0).toUpperCase() + cond.slice(1);
+          return '<div class="tc-cond-cell">'
+            + '<div class="tc-cond-label">' + label + '</div>'
+            + '<div class="tc-cond-controls">'
+            + '<button class="bm-adj-btn" ontouchstart="" onclick="setPartyCondition(\'' + member.name + '\',\'' + cond + '\',-1)" ' + (val <= 0 ? 'disabled' : '') + '>−</button>'
+            + '<span class="tc-cond-val' + (val > 0 ? ' tc-active' : '') + '">' + val + '</span>'
+            + '<button class="bm-adj-btn" ontouchstart="" onclick="setPartyCondition(\'' + member.name + '\',\'' + cond + '\',1)" ' + (val >= 4 ? 'disabled' : '') + '>+</button>'
+            + '</div>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+  }).join('');
+}
+
+// ── Item Effects ──────────────────────────────────────────────────
+function syncItemEffects() {
+  const el = document.getElementById('item-effects-list');
+  if (!el) return;
+  const effects = S.item_effects || [];
+  if (!effects.length) {
+    el.innerHTML = '<div class="disease-empty">No item effects tracked</div>';
+    return;
+  }
+  el.innerHTML = effects.map((e, idx) => {
+    const tip = e.description || 'Tap name to add description';
+    return '<div class="ie-row has-tooltip' + (e.description ? ' ie-described' : '') + '" data-tooltip="' + tip.replace(/"/g, '&quot;') + '">'
+      + '<div class="ie-row-main">'
+      +   '<button class="ie-name-btn" ontouchstart="" onclick="openIEModal(' + idx + ')">' + e.name + '</button>'
+      +   (e.source ? '<span class="ie-source">' + e.source + '</span>' : '')
+      + '</div>'
+      + '<button class="bm-remove-btn" ontouchstart="" onclick="ieRemove(' + idx + ')" style="padding:0 4px">✕</button>'
       + '</div>';
   }).join('');
 }

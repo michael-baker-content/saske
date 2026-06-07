@@ -120,8 +120,10 @@
 .info-val { color: var(--text2); font-size: 13px; }
 .tag-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .tag { font-size: 10px; background: var(--bg4); border: 1px solid var(--border2); border-radius: 2px; padding: 2px 7px; color: var(--text2); }
-.feat-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.feat-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
 .feat-row:last-child { border-bottom: none; }
+.feat-row:hover { color: var(--blue); }
+.feat-row.feat-described { border-left: 2px solid var(--blue-dim); padding-left: 5px; }
 .feat-type { font-size: 9px; color: var(--text3); }
 .feat-note { font-size: 9px; color: var(--text3); margin-left: 4px; }
 .inv-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--border); }
@@ -203,3 +205,50 @@
   background: var(--bg4); border: 1px solid var(--border2);
   border-radius: 3px; color: var(--text); padding: 2px 4px;
 }
+
+/* ── Inventory description in section cards ── */
+.section-inv-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 3px 0 6px;
+}
+.section-inv-desc {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.section-inv-notes {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.4;
+}
+
+/* ── Item Effects ── */
+.ie-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+}
+.ie-row:last-child { border-bottom: none; }
+.ie-row-main { display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0; }
+.ie-source { font-size: 10px; color: var(--text3); white-space: nowrap; }
+.ie-name-btn {
+  background: none; border: none;
+  color: var(--blue); font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600;
+  padding: 0; cursor: pointer; text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--blue-dim);
+}
+.ie-name-btn:hover { color: var(--text); }
+.ie-described .ie-name-btn { text-decoration-color: var(--blue); }
+
+/* ── Item Effects add form ── */
+.ie-add-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.ie-add-fields { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.ie-add-fields .text-in { flex: 1; min-width: 0; }
