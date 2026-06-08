@@ -52,8 +52,7 @@ function buildInfo() {
         <div class="feat-group">
           <div class="feat-group-title">${type}</div>
           ${feats.filter(f=>f.type===type).map(f=>`
-          <div class="feat-row has-tooltip${(S.feat_descriptions||{})[f.name] ? ' feat-described' : ''}"
-               data-tooltip="${(S.feat_descriptions||{})[f.name] || 'Tap to add description'}"
+          <div class="feat-row${(S.feat_descriptions||{})[f.name] ? ' feat-described' : ''}"
                ontouchstart="" onclick="openFeatModal('${f.name.replace(/'/g,"\\'")}')">
             <span>${f.name}${f.note?`<span class="feat-note">${f.note}</span>`:''}</span>
             <span class="feat-type">Lvl ${f.level||'—'}</span>

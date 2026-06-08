@@ -145,13 +145,6 @@
       "key_attribute": "wis"
     },
     {
-      "name": "Lore: Absalom",
-      "modifier": 16,
-      "proficiency": "Master",
-      "notes": "Additional Lore feat \u2014 auto-advances with level",
-      "key_attribute": "int"
-    },
-    {
       "name": "Survival",
       "modifier": 16,
       "proficiency": "Expert",

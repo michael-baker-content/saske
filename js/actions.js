@@ -249,12 +249,12 @@ function exportSessionReport() {
     // Standard (non-ammo) items
     const stdItems = inv.filter(i => !i.ammo);
     if (stdItems.length) {
-      lines.push('| Item | Qty | Bulk | Notes |');
-      lines.push('|---|---|---|---|');
+      lines.push('| Item | Qty | Bulk | Description | Notes |');
+      lines.push('|---|---|---|---|---|');
       stdItems.forEach(item => {
         const qty  = item.quantity != null ? item.quantity : '—';
         const bulk = calcBulk(item.bulk, item.quantity ?? 1);
-        lines.push('| ' + item.name + ' | ' + qty + ' | ' + bulk + ' | ' + (item.notes || '') + ' |');
+        lines.push('| ' + item.name + ' | ' + qty + ' | ' + bulk + ' | ' + (item.description || '') + ' | ' + (item.notes || '') + ' |');
       });
       lines.push('');
     }
@@ -293,6 +293,58 @@ function exportSessionReport() {
     PARTY.forEach(m => {
       const mc = pc[m.name] || {};
       lines.push('| ' + m.name + ' | ' + (mc.clumsy||0) + ' | ' + (mc.enfeebled||0) + ' | ' + (mc.sickened||0) + ' |');
+    });
+    lines.push('');
+  }
+
+  // ── Warden's Boon ──
+  if (S.warden_active) {
+    lines.push('## Warden\'s Boon');
+    lines.push('Active — allies within 30 ft gain +1 circumstance bonus to attack rolls vs Prey.');
+    lines.push('');
+  }
+
+  // ── Diseases ──
+  const diseases     = S.diseases || [];
+  const hakiDiseases = S.haki_diseases || [];
+  if (diseases.length || hakiDiseases.length) {
+    lines.push('## Diseases');
+    if (diseases.length) {
+      lines.push('**Saske:**');
+      diseases.forEach(d => {
+        const timer = d.turnsRemaining != null ? ' — ' + d.turnsRemaining + ' turns remaining' : '';
+        lines.push('- ' + d.name + ' (Stage ' + d.stage + ' / ' + d.maxStage + ')' + timer);
+      });
+    }
+    if (hakiDiseases.length) {
+      lines.push('**' + C.companion.name + ':**');
+      hakiDiseases.forEach(d => {
+        const timer = d.turnsRemaining != null ? ' — ' + d.turnsRemaining + ' turns remaining' : '';
+        lines.push('- ' + d.name + ' (Stage ' + d.stage + ' / ' + d.maxStage + ')' + timer);
+      });
+    }
+    lines.push('');
+  }
+
+  // ── Item Effects ──
+  const itemEffects = (S.item_effects || []).filter(e => e.name);
+  if (itemEffects.length) {
+    lines.push('## Item Effects');
+    itemEffects.forEach(e => {
+      const src  = e.source      ? ' (' + e.source + ')'       : '';
+      const desc = e.description ? ' — ' + e.description       : '';
+      lines.push('- **' + e.name + '**' + src + desc);
+    });
+    lines.push('');
+  }
+
+  // ── Feat Descriptions ──
+  const featDescs = S.feat_descriptions || {};
+  const featDescEntries = Object.entries(featDescs).filter(([, v]) => v);
+  if (featDescEntries.length) {
+    lines.push('## Feat Notes');
+    featDescEntries.forEach(([name, desc]) => {
+      lines.push('**' + name + ':** ' + desc);
     });
     lines.push('');
   }

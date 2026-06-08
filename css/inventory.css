@@ -19,7 +19,7 @@
   background: none; border: none; color: var(--text3); cursor: pointer;
   font-size: 14px; padding: 0 2px; line-height: 1;
 }
-.inv-del-btn:hover { color: var(--red-b); }
+.inv-del-btn:hover, .inv-del-btn:active { color: var(--red-b); }
 .inv-empty { font-size: 12px; color: var(--text3); font-style: italic; padding: 4px 0 8px; }
 
 /* Add item form */
@@ -231,7 +231,7 @@ input[type=number] {
   cursor: pointer;
   padding: 0 2px;
 }
-.med-d20-clear:hover { color: var(--text); }
+.med-d20-clear:hover, .med-d20-clear:active { color: var(--text); }
 
 /* Prey hint second line */
 .prey-hint-line {
@@ -296,10 +296,10 @@ input[type=number] {
   text-align: center; min-height: 64px;
 }
 .session-export-btn { border-color: var(--blue); }
-.session-export-btn:hover { background: var(--blue-muted); }
+.session-export-btn:hover, .session-export-btn:active { background: var(--blue-muted); }
 .session-export-btn .session-btn-label { color: var(--blue); }
 .session-reset-btn { border-color: var(--red); }
-.session-reset-btn:hover { background: rgba(176,48,48,0.12); }
+.session-reset-btn:hover, .session-reset-btn:active { background: rgba(176,48,48,0.12); }
 .session-reset-btn .session-btn-label { color: var(--red-b); }
 .session-btn-icon { font-size: 20px; line-height: 1; }
 .session-btn-label { font-size: 12px; font-weight: 700; color: var(--text); }

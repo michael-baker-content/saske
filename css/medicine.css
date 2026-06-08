@@ -29,7 +29,7 @@
   font-size: 20px; color: var(--text3); cursor: pointer; line-height: 1;
   background: none; border: none; padding: 0 4px;
 }
-.modal-close:hover { color: var(--text); }
+.modal-close:hover, .modal-close:active { color: var(--text); }
 .modal-section-label {
   font-family: 'Inter', sans-serif; font-weight: 600; font-size: 9px; letter-spacing: 1.5px;
   color: var(--text3); text-transform: uppercase; margin-bottom: 8px;
@@ -49,7 +49,7 @@
   padding: 4px 10px; border-radius: 3px; cursor: pointer;
 }
 .map-btn.active { border-color: var(--blue); color: var(--blue); background: var(--bg4); }
-.map-btn:hover { border-color: var(--border2); color: var(--text); }
+.map-btn:hover, .map-btn:active { border-color: var(--border2); color: var(--text); }
 .modal-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
 .result-box {
@@ -70,7 +70,7 @@
 }
 .modal-calc-btn:active { background: var(--bg3); }
 .weapon-card.clickable { cursor: pointer; transition: border-color 0.15s; }
-.weapon-card.clickable:hover { border-color: var(--text3); }
+.weapon-card.clickable:hover, .weapon-card.clickable:active { border-color: var(--text3); }
 .weapon-card.clickable:active { border-color: var(--blue); }
 .weapon-tap-hint { font-size: 10px; color: var(--text3); margin-top: 4px; opacity: 0.7; }
 
@@ -103,7 +103,7 @@
   transition: border-color 0.15s, background 0.15s;
   user-select: none;
 }
-.med-member:hover { border-color: var(--border2); }
+.med-member:hover, .med-member:active { border-color: var(--border2); }
 .med-member.selected { border-color: var(--blue); background: var(--blue-muted); }
 .med-member-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .med-member-tag { font-size: 9px; color: var(--text3); margin-top: 2px; letter-spacing: 0.04em; }
@@ -124,7 +124,7 @@
   padding: 7px 2px; border-radius: 3px; cursor: pointer; flex: 1; text-align: center;
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
-.med-tier-btn:hover { border-color: var(--border2); color: var(--text); }
+.med-tier-btn:hover, .med-tier-btn:active { border-color: var(--border2); color: var(--text); }
 .med-tier-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-muted); }
 
 .med-assurance-row { display: flex; align-items: center; gap: 8px; }
@@ -209,7 +209,7 @@
   font-size: 13px; color: var(--text3); cursor: pointer; padding: 0 1px;
   background: none; border: none; line-height: 1;
 }
-.bm-remove-btn:hover { color: var(--red-b); }
+.bm-remove-btn:hover, .bm-remove-btn:active { color: var(--red-b); }
 .bm-tracker-toggle-row {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 8px; flex-wrap: wrap; gap: 6px;
@@ -226,7 +226,7 @@
   border: 1px solid var(--border2); background: var(--bg3); color: var(--text2);
   padding: 3px 6px; border-radius: 12px; cursor: pointer;
 }
-.bm-member-chip:hover { border-color: var(--blue); color: var(--blue); }
+.bm-member-chip:hover, .bm-member-chip:active { border-color: var(--blue); color: var(--blue); }
 .bm-member-chip.tracked { border-color: var(--green); color: var(--green-b); cursor: default; opacity: 0.5; }
 
 /* ── Feats column layout ── */
@@ -371,7 +371,7 @@
   border-color: var(--border2); color: var(--text3);
   padding: 6px 12px;
 }
-.med-clear-btn:hover { border-color: var(--text3); color: var(--text); }
+.med-clear-btn:hover, .med-clear-btn:active { border-color: var(--text3); color: var(--text); }
 
 
 /* ── Treat Condition section (merged into BM Cooldowns card) ── */
