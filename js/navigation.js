@@ -12,9 +12,14 @@ fetch('character.json')
     C = data;
     loadState();
     // Initialise HP from JSON if never set
-    if (S.hp === null)       S.hp       = C.defenses.hp_max;
-    if (S.haki_hp === null)  S.haki_hp  = C.companion.hp_max;
+    if (S.hp === null || typeof S.hp !== 'number') S.hp = C.defenses.hp_max;
+    S.hp = Math.max(0, Math.min(C.defenses.hp_max, S.hp));
+    S.tmp_hp = Math.max(0, S.tmp_hp || 0);
+
     S.haki_hp_max = C.companion.hp_max;
+    if (S.haki_hp === null || typeof S.haki_hp !== 'number') S.haki_hp = S.haki_hp_max;
+    S.haki_hp = Math.max(0, Math.min(S.haki_hp_max, S.haki_hp));
+    S.haki_tmp_hp = Math.max(0, S.haki_tmp_hp || 0);
     // Seed inventory from JSON on first load; preserve state on subsequent loads
     if (!S.inventory) {
       S.inventory = C.inventory.map(i => ({
@@ -110,13 +115,17 @@ function initSwipe() {
     const text = el.dataset.tooltip;
     if (!text) return;
     clearTimeout(hideTimer);
+    tip._anchor = el;
     tip.textContent = text;
     tip.classList.add('visible');
     positionTip(el);
   }
 
   function hideTip() {
-    hideTimer = setTimeout(() => tip.classList.remove('visible'), 80);
+    hideTimer = setTimeout(() => {
+      tip.classList.remove('visible');
+      tip._anchor = null;
+    }, 80);
   }
 
   function positionTip(el) {
@@ -132,23 +141,29 @@ function initSwipe() {
     tip.style.top  = Math.max(margin, top) + 'px';
   }
 
-  // Desktop: mouseenter / mouseleave
-  document.addEventListener('mouseenter', e => {
+  // Desktop: show/hide once per tooltip anchor, not when moving across its children.
+  document.addEventListener('mouseover', e => {
     if (!(e.target instanceof Element)) return;
     const el = e.target.closest('.has-tooltip');
-    if (el) showTip(el);
-  }, true);
-  document.addEventListener('mouseleave', e => {
+    if (!el) return;
+    if (el.contains(e.relatedTarget)) return;
+    showTip(el);
+  });
+  document.addEventListener('mouseout', e => {
     if (!(e.target instanceof Element)) return;
-    if (e.target.closest('.has-tooltip')) hideTip();
-  }, true);
+    const el = e.target.closest('.has-tooltip');
+    if (!el) return;
+    if (el.contains(e.relatedTarget)) return;
+    hideTip();
+  });
 
   // Mobile: tap to toggle
   document.addEventListener('touchstart', e => {
     if (!(e.target instanceof Element)) return;
     const el = e.target.closest('.has-tooltip');
     if (el) {
-      e.preventDefault();
+      const interactive = e.target.closest('button, input, select, textarea, [onclick], a');
+      if (!interactive) e.preventDefault();
       if (tip.classList.contains('visible') && tip._anchor === el) {
         tip.classList.remove('visible');
         tip._anchor = null;

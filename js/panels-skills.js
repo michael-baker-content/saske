@@ -14,10 +14,10 @@ function buildSkills() {
     const profNum  = pb === 0 ? 0 : C.meta.level + pb;
     const tipParts = [];
     if (pb > 0) tipParts.push(profNum + ' prof (' + s.proficiency + ')');
-    tipParts.push((attrVal >= 0 ? '+' : '') + attrVal + ' ' + attrName);
-    if (s.item_bonus) tipParts.push('+' + s.item_bonus + ' item');
-    const baseTip  = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (s.modifier >= 0 ? '+' : '') + s.modifier;
-    const skillPen = (S._condPenalties?.skills?.[s.name] || 0);
+    tipParts.push(mathTerm(attrVal, attrName));
+    if (s.item_bonus) tipParts.push(mathTerm(s.item_bonus, 'item'));
+    const baseTip  = s.name + ' = ' + tipParts.join(' ') + ' = ' + fmtMod(s.modifier);
+    const skillPen = (condPenalties?.skills?.[s.name] || 0);
     const effectiveMod = s.modifier - skillPen;
     const mod      = (effectiveMod >= 0 ? '+' : '') + effectiveMod;
     const style    = skillPen > 0 ? ' style="color:var(--red-b)"' : '';
@@ -166,4 +166,3 @@ function buildSkills() {
   syncBMTracker();
   syncPartyConditions();
 }
-

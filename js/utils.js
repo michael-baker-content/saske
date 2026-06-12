@@ -30,6 +30,80 @@ function profBonus(rank, level) {
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function fmtMod(v) { return (v >= 0 ? '+' : '') + v; }
+function mathTerm(value, label = '') {
+  const n = Number(value) || 0;
+  return `${n < 0 ? '- ' : '+ '}${Math.abs(n)}${label ? ' ' + label : ''}`;
+}
+function joinMathTerms(first, terms = []) {
+  return [first, ...terms.filter(term => term && !term.startsWith('+ 0') && !term.startsWith('- 0'))].join(' ');
+}
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
+function attackTooltip(weapon, source, penalty = 0) {
+  const isCompanion = source === 'companion';
+  const attrs = isCompanion ? C.companion.attributes : C.attributes;
+  const profRank = isCompanion ? 'Trained' : 'Expert';
+  const ability = attackAbility(weapon, source);
+  const abilityVal = attrs[ability.key] ?? 0;
+  const prof = profBonus(profRank, C.meta.level);
+  const itemBonus = Math.max(0, weapon.attack - prof - abilityVal);
+  const expr = joinMathTerms(`${prof} prof (${profRank})`, [
+    mathTerm(abilityVal, ability.label),
+    mathTerm(itemBonus, 'item'),
+  ]);
+  let tooltip = `${weapon.name} attack = ${expr} = ${fmtMod(weapon.attack)}`;
+  if (penalty > 0) tooltip += `; current ${fmtMod(weapon.attack - penalty)} after -${penalty} condition penalty`;
+  return tooltip;
+}
+
+function attackAbility(weapon, source) {
+  if (weapon.ability_mod?.stat) {
+    return { key: weapon.ability_mod.stat, label: weapon.ability_mod.label || weapon.ability_mod.stat.toUpperCase() };
+  }
+  const traits = (weapon.traits || []).map(t => t.toLowerCase());
+  const isRanged = source === 'player' && traits.some(t =>
+    t.includes('range') || t.includes('reload') || t.includes('deadly')
+  );
+  const isFinesse = traits.some(t => t.includes('finesse'));
+  return (isRanged || isFinesse)
+    ? { key: 'dex', label: 'DEX' }
+    : { key: 'str', label: 'STR' };
+}
+
+function saskeActionBudget() {
+  const conditions = S.conditions || [];
+  const quickened = conditions.some(c => c.name === 'Quickened');
+  const slowed = conditions
+    .filter(c => c.name.startsWith('Slowed '))
+    .reduce((max, c) => Math.max(max, condRank(c.name)), 0);
+  const total = Math.max(0, Math.min(4, 3 + (quickened ? 1 : 0) - slowed));
+  return { total, quickened, slowed };
+}
+
+function isActionAvailable(id) {
+  if (id === 'r1') return true;
+  const match = id.match(/^a(\d)$/);
+  if (!match) return false;
+  return Number(match[1]) <= saskeActionBudget().total;
+}
+
+function statTooltip(label, total, first, terms = []) {
+  return `${label} = ${joinMathTerms(first, terms)} = ${fmtMod(total)}`;
+}
+
+function dcTooltip(label, total, first, terms = []) {
+  return `${label} = ${joinMathTerms(first, terms)} = ${total}`;
+}
 
 const RANKED_FAMILIES = [
   'Clumsy','Enfeebled','Drained','Doomed','Frightened',
@@ -94,7 +168,7 @@ function invDescHtml(name) {
   const item = (S.inventory || []).find(i => i.name === name);
   if (!item) return '';
   const parts = [];
-  if (item.description) parts.push('<span class="section-inv-desc">' + item.description + '</span>');
-  if (item.notes)       parts.push('<span class="section-inv-notes">' + item.notes + '</span>');
+  if (item.description) parts.push('<span class="section-inv-desc">' + escapeHtml(item.description) + '</span>');
+  if (item.notes)       parts.push('<span class="section-inv-notes">' + escapeHtml(item.notes) + '</span>');
   return parts.length ? '<div class="section-inv-info">' + parts.join('') + '</div>' : '';
 }

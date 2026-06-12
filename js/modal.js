@@ -17,8 +17,8 @@ function openModal(idx, source) {
   document.getElementById('modal-weapon-name').textContent = weapon.name;
 
   const condPen = source === 'player'
-    ? (S._condPenalties?.atk || 0)
-    : (S._hakiCondPenalties?.atk || 0);
+    ? (condPenalties?.atk || 0)
+    : (hakiCondPenalties?.atk || 0);
   const mod = weapon.attack - condPen;
   document.getElementById('modal-atk-mod').value = mod;
   document.getElementById('modal-d20').value = '';
@@ -177,8 +177,8 @@ function updateAtkTotal() {
   const d20 = parseInt(document.getElementById('modal-d20').value);
   if (isNaN(d20)) { document.getElementById('modal-atk-total').value = ''; return; }
   const condPen = modalSource === 'player'
-    ? (S._condPenalties?.atk || 0)
-    : (S._hakiCondPenalties?.atk || 0);
+    ? (condPenalties?.atk || 0)
+    : (hakiCondPenalties?.atk || 0);
   const mod = modalWeapon.attack - condPen;
   document.getElementById('modal-atk-total').value = d20 + mod + effectiveMAP();
 }
@@ -193,8 +193,8 @@ function calcResults() {
   if (isNaN(d20)) { alert('Enter your d20 roll first.'); return; }
 
   const condPen = modalSource === 'player'
-    ? (S._condPenalties?.atk || 0)
-    : (S._hakiCondPenalties?.atk || 0);
+    ? (condPenalties?.atk || 0)
+    : (hakiCondPenalties?.atk || 0);
   const mod = modalWeapon.attack - condPen;
   const atkTotal = d20 + mod + effectiveMAP();
   let atkBreak = 'd20(' + d20 + ') + mod(' + (mod >= 0 ? '+' + mod : mod) + ')';

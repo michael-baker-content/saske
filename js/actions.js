@@ -9,21 +9,24 @@
 // HP
 function changeHP(sign) {
   const amt = parseInt(document.getElementById('hp-amt').value) || 1;
-  if (sign < 0) {
-    // Damage: drain temp HP first, then real HP
-    let dmg = amt;
-    const tmpAbsorb = Math.min(S.tmp_hp, dmg);
-    S.tmp_hp = Math.max(0, S.tmp_hp - tmpAbsorb);
-    dmg -= tmpAbsorb;
-    S.hp = Math.max(0, S.hp - dmg);
-  } else {
-    // Healing: only restores real HP, not temp (PF2e rule)
-    S.hp = Math.min(C.defenses.hp_max, S.hp + amt);
-  }
-  saveState(); syncHP();
+  commit(() => {
+    if (sign < 0) {
+      // Damage: drain temp HP first, then real HP
+      let dmg = amt;
+      const tmpAbsorb = Math.min(S.tmp_hp, dmg);
+      S.tmp_hp = Math.max(0, S.tmp_hp - tmpAbsorb);
+      dmg -= tmpAbsorb;
+      S.hp = Math.max(0, S.hp - dmg);
+    } else {
+      // Healing: only restores real HP, not temp (PF2e rule)
+      S.hp = Math.min(C.defenses.hp_max, S.hp + amt);
+    }
+  }, [syncHP]);
   document.getElementById('hp-amt').value = '';
 }
-function setHP(val) { S.hp = Math.min(C.defenses.hp_max, Math.max(0, val)); saveState(); syncHP(); }
+function setHP(val) {
+  commit(() => { S.hp = Math.min(C.defenses.hp_max, Math.max(0, val)); }, [syncHP]);
+}
 function toggleTmpStrip(who) {
   const stripId  = who === 'haki' ? 'haki-tmp-strip'  : 'saske-tmp-strip';
   const toggleId = who === 'haki' ? 'haki-tmp-toggle' : 'saske-tmp-toggle';
@@ -43,10 +46,11 @@ function toggleTmpStrip(who) {
 function setTmpHP() {
   const val = parseInt(document.getElementById('tmp-amt').value);
   if (isNaN(val) || val < 0) return;
-  // PF2e: only keep higher of new vs existing temp HP
-  S.tmp_hp = Math.max(S.tmp_hp, val);
+  commit(() => {
+    // PF2e: only keep higher of new vs existing temp HP
+    S.tmp_hp = Math.max(S.tmp_hp, val);
+  }, [syncHP]);
   document.getElementById('tmp-amt').value = '';
-  saveState(); syncHP();
   // Auto-close if temp HP is now set
   if (S.tmp_hp > 0) {
     const strip = document.getElementById('saske-tmp-strip');
@@ -55,43 +59,45 @@ function setTmpHP() {
   }
 }
 function clearTmpHP() {
-  S.tmp_hp = 0;
-  saveState(); syncHP();
+  commit(() => { S.tmp_hp = 0; }, [syncHP]);
 }
 function fullRest() {
-  S.hp = C.defenses.hp_max;
-  S.tmp_hp = 0;
-  setHakiHP(C.companion.hp_max);
-  saveState(); syncHP();
+  commit(() => {
+    S.hp = C.defenses.hp_max;
+    S.tmp_hp = 0;
+    S.haki_hp = C.companion.hp_max;
+    S.haki_tmp_hp = 0;
+  }, [syncHP, syncHakiHP]);
 }
 
 // Haki HP
 function changeHakiHP(sign) {
   const amt = parseInt(document.getElementById('haki-amt')?.value) || 1;
-  if (sign < 0) {
-    let dmg = amt;
-    const tmpAbsorb = Math.min(S.haki_tmp_hp, dmg);
-    S.haki_tmp_hp = Math.max(0, S.haki_tmp_hp - tmpAbsorb);
-    dmg -= tmpAbsorb;
-    S.haki_hp = Math.max(0, S.haki_hp - dmg);
-  } else {
-    S.haki_hp = Math.min(S.haki_hp_max, S.haki_hp + amt);
-  }
-  saveState(); syncHakiHP();
+  commit(() => {
+    if (sign < 0) {
+      let dmg = amt;
+      const tmpAbsorb = Math.min(S.haki_tmp_hp, dmg);
+      S.haki_tmp_hp = Math.max(0, S.haki_tmp_hp - tmpAbsorb);
+      dmg -= tmpAbsorb;
+      S.haki_hp = Math.max(0, S.haki_hp - dmg);
+    } else {
+      S.haki_hp = Math.min(S.haki_hp_max, S.haki_hp + amt);
+    }
+  }, [syncHakiHP]);
   const hakiAmt = document.getElementById('haki-amt');
   if (hakiAmt) hakiAmt.value = '';
 }
 function setHakiHP(val) {
-  S.haki_hp = Math.min(S.haki_hp_max, Math.max(0, val));
-  S.haki_tmp_hp = 0;
-  saveState(); syncHakiHP();
+  commit(() => {
+    S.haki_hp = Math.min(S.haki_hp_max, Math.max(0, val));
+    S.haki_tmp_hp = 0;
+  }, [syncHakiHP]);
 }
 function setHakiTmpHP() {
   const val = parseInt(document.getElementById('haki-tmp-amt').value);
   if (isNaN(val) || val < 0) return;
-  S.haki_tmp_hp = Math.max(S.haki_tmp_hp, val);
+  commit(() => { S.haki_tmp_hp = Math.max(S.haki_tmp_hp, val); }, [syncHakiHP]);
   document.getElementById('haki-tmp-amt').value = '';
-  saveState(); syncHakiHP();
   if (S.haki_tmp_hp > 0) {
     const strip = document.getElementById('haki-tmp-strip');
     if (strip) strip.style.display = 'none';
@@ -99,34 +105,30 @@ function setHakiTmpHP() {
   }
 }
 function clearHakiTmpHP() {
-  S.haki_tmp_hp = 0;
-  saveState(); syncHakiHP();
+  commit(() => { S.haki_tmp_hp = 0; }, [syncHakiHP]);
 }
 
 // Prey
 function setPrey() {
   const val = document.getElementById('prey-input')?.value.trim();
   if (!val) return;
-  S.prey = val;
+  commit(() => { S.prey = val; }, [syncPrey]);
   document.getElementById('prey-input').value = '';
-  saveState(); syncPrey();
 }
-function clearPrey() { S.prey = ''; saveState(); syncPrey(); }
+function clearPrey() { commit(() => { S.prey = ''; }, [syncPrey]); }
 
 // Actions
 function toggleAction(id) {
-  S.actions[id] = !S.actions[id];
-  saveState(); syncActions();
+  if (!isActionAvailable(id)) return;
+  commit(() => { S.actions[id] = !S.actions[id]; }, [syncActions]);
 }
 function resetActions() {
-  Object.keys(S.actions).forEach(k => S.actions[k] = false);
-  saveState(); syncActions();
+  commit(() => { Object.keys(S.actions).forEach(k => S.actions[k] = false); }, [syncActions]);
 }
 
 // Warden
 function toggleWarden() {
-  S.warden_active = !S.warden_active;
-  saveState(); syncWarden();
+  commit(() => { S.warden_active = !S.warden_active; }, [syncWarden]);
 }
 
 // ─── Ranked condition helpers ────────────────────────────────────
@@ -136,38 +138,34 @@ function toggleWarden() {
 function addCondition() {
   const result = condBuildName('cond-select');
   if (!result) return;
-  S.conditions = upsertCondition(S.conditions, result.name, result.type);
+  commit(() => { S.conditions = upsertCondition(S.conditions, result.name, result.type); }, [syncConditions, applyConditionEffects, syncActions]);
   // Reset select and level input, re-disable Add
   const sel = document.getElementById('cond-select');
   sel.value = '';
   const lvl = document.getElementById('cond-select-level');
   if (lvl) lvl.style.display = 'none';
   document.getElementById('cond-select-add-btn').disabled = true;
-  saveState(); syncConditions(); applyConditionEffects();
 }
 function removeCondition(name) {
-  S.conditions = S.conditions.filter(c => c.name !== name);
-  saveState(); syncConditions(); applyConditionEffects();
+  commit(() => { S.conditions = S.conditions.filter(c => c.name !== name); }, [syncConditions, applyConditionEffects, syncActions]);
 }
-function clearConditions() { S.conditions = []; saveState(); syncConditions(); applyConditionEffects(); }
+function clearConditions() { commit(() => { S.conditions = []; }, [syncConditions, applyConditionEffects, syncActions]); }
 
 // Conditions (Haki)
 function addHakiCondition() {
   const result = condBuildName('haki-cond-select');
   if (!result) return;
-  S.haki_conditions = upsertCondition(S.haki_conditions, result.name, result.type);
+  commit(() => { S.haki_conditions = upsertCondition(S.haki_conditions, result.name, result.type); }, [syncHakiConditions, applyHakiConditionEffects]);
   const sel = document.getElementById('haki-cond-select');
   sel.value = '';
   const lvl = document.getElementById('haki-cond-select-level');
   if (lvl) lvl.style.display = 'none';
   document.getElementById('haki-cond-select-add-btn').disabled = true;
-  saveState(); syncHakiConditions(); applyHakiConditionEffects();
 }
 function removeHakiCondition(name) {
-  S.haki_conditions = S.haki_conditions.filter(c => c.name !== name);
-  saveState(); syncHakiConditions(); applyHakiConditionEffects();
+  commit(() => { S.haki_conditions = S.haki_conditions.filter(c => c.name !== name); }, [syncHakiConditions, applyHakiConditionEffects]);
 }
-function clearHakiConditions() { S.haki_conditions = []; saveState(); syncHakiConditions(); applyHakiConditionEffects(); }
+function clearHakiConditions() { commit(() => { S.haki_conditions = []; }, [syncHakiConditions, applyHakiConditionEffects]); }
 
 // ─── Haki Barding Toggle ──────────────────────────────────────────
 
@@ -304,6 +302,24 @@ function exportSessionReport() {
     lines.push('');
   }
 
+  // ── Current Turn Actions ──
+  const actionLabels = { a1: 'Action 1', a2: 'Action 2', a3: 'Action 3', a4: 'Quickened Action', r1: 'Reaction' };
+  const usedActions = Object.entries(S.actions || {})
+    .filter(([, used]) => used)
+    .map(([key]) => actionLabels[key] || key);
+  if (usedActions.length) {
+    lines.push('## Current Turn');
+    lines.push('Used: **' + usedActions.join(', ') + '**');
+    lines.push('');
+  }
+
+  // ── Companion Equipment ──
+  if (S.haki_barding !== DEFAULT_STATE.haki_barding) {
+    lines.push('## Companion Equipment');
+    lines.push('**' + C.companion.name + ' barding:** ' + (S.haki_barding ? 'worn' : 'not worn'));
+    lines.push('');
+  }
+
   // ── Diseases ──
   const diseases     = S.diseases || [];
   const hakiDiseases = S.haki_diseases || [];
@@ -421,6 +437,7 @@ function saveNotes() {
   saveState();
   const t = document.getElementById('notes-toast');
   if (t) { t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1500); }
+  syncButtonStates?.();
 }
 
 function clearNotes() {
@@ -428,6 +445,7 @@ function clearNotes() {
   const el = document.getElementById('notes');
   if (el) el.value = '';
   saveState();
+  syncButtonStates?.();
 }
 // ── Diseases ──────────────────────────────────────────────────────
 function diseaseAdd() {
@@ -444,7 +462,7 @@ function diseaseAdd() {
 function diseaseUpdate(idx, field, value) {
   if (!S.diseases?.[idx]) return;
   S.diseases[idx][field] = value;
-  saveState(); syncDiseases();
+  saveState(); syncDiseases(); syncButtonStates?.();
 }
 
 function diseaseRemove(idx) {
@@ -466,7 +484,7 @@ function diseaseTick(idx, delta) {
     // Disease clears
     S.diseases.splice(idx, 1);
   }
-  saveState(); syncDiseases();
+  saveState(); syncDiseases(); syncButtonStates?.();
 }
 
 // ── Haki Diseases ─────────────────────────────────────────────────
@@ -484,7 +502,7 @@ function hakiDiseaseAdd() {
 function hakiDiseaseUpdate(idx, field, value) {
   if (!S.haki_diseases?.[idx]) return;
   S.haki_diseases[idx][field] = value;
-  saveState(); syncHakiDiseases();
+  saveState(); syncHakiDiseases(); syncButtonStates?.();
 }
 
 function hakiDiseaseRemove(idx) {
@@ -505,7 +523,7 @@ function hakiDiseaseTick(idx, delta) {
   } else if (d.turnsRemaining === 0 && d.stage === 1) {
     S.haki_diseases.splice(idx, 1);
   }
-  saveState(); syncHakiDiseases();
+  saveState(); syncHakiDiseases(); syncButtonStates?.();
 }
 
 // ── Party Condition Tracking (Treat Condition feat) ───────────────
@@ -571,6 +589,7 @@ function saveFeatDesc() {
   saveState();
   featModalCloseDirect();
   buildInfo?.();  // re-render feats so tooltip updates
+  syncButtonStates?.();
 }
 
 function clearFeatDesc() {
@@ -580,6 +599,7 @@ function clearFeatDesc() {
   saveState();
   featModalCloseDirect();
   buildInfo?.();
+  syncButtonStates?.();
 }
 
 function featModalClose(e) {
@@ -603,12 +623,12 @@ function ieAdd() {
   nameEl.value = '';
   if (sourceEl) sourceEl.value = '';
   document.getElementById('ie-add-btn').disabled = true;
-  saveState(); syncItemEffects();
+  saveState(); syncItemEffects(); syncButtonStates?.();
 }
 
 function ieRemove(idx) {
   S.item_effects?.splice(idx, 1);
-  saveState(); syncItemEffects();
+  saveState(); syncItemEffects(); syncButtonStates?.();
 }
 
 let _ieModalIdx = null;
@@ -641,6 +661,7 @@ saveFeatDesc = function() {
     saveState();
     featModalCloseDirect();
     syncItemEffects();
+    syncButtonStates?.();
     _ieModalIdx = null;
   } else {
     _origSaveFeatDesc();
@@ -656,6 +677,7 @@ clearFeatDesc = function() {
     saveState();
     featModalCloseDirect();
     syncItemEffects();
+    syncButtonStates?.();
     _ieModalIdx = null;
   } else {
     _origClearFeatDesc();

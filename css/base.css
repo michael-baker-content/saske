@@ -235,3 +235,30 @@ button:disabled, input:disabled, select:disabled {
 #panels { flex: 1; overflow: hidden; min-height: 0; }
 .panels-track { display: flex; height: 100%; transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); will-change: transform; }
 .panel { flex: 0 0 100%; width: 100%; height: 100%; overflow-y: auto; padding: 12px 14px 40px; -webkit-overflow-scrolling: touch; }
+
+@media (pointer: coarse) {
+  .tab {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .strip-btn,
+  .hp-in,
+  .btn,
+  .text-in,
+  .cond-select,
+  .cond-level-input {
+    min-height: 40px;
+  }
+  .tog {
+    width: 48px;
+    height: 28px;
+    border-radius: 14px;
+  }
+  .tog-knob {
+    width: 24px;
+    height: 24px;
+  }
+  .tog.on .tog-knob { left: 21px; }
+}

@@ -1,37 +1,81 @@
-# Building a Personal Tabletop Tracker: Recent Challenges and Solutions
+# Making a Pathfinder Combat Tracker Feel More Like a Table Companion
 
-When a tool is built for exactly one user, it can afford to be opinionated in ways a general product never could. My PF2e session tracker — a static web app for tracking my ranger Saske and her animal companion Haki across combat sessions — has been iterating quickly lately, and a few of the recent problems were interesting enough to be worth writing up.
+This session was about turning a useful Pathfinder 2e tracker into something a little more trustworthy during actual play.
 
-## The Data Connection Problem
+The app already tracked Saske, my ranger, and Haki, her animal companion. It handled hit points, attacks, conditions, inventory, medicine, and session notes. But as it grew, a few rough edges started to matter. Some changes were not being reflected in the session report. Some tooltips explained the math in a clunky way. Some mobile controls needed more room. And one important Pathfinder rule interaction, Quickened and Slowed changing the number of actions available, still needed to be represented directly in the turn tracker.
 
-One of the recurring design tensions in this project is between static character data and live session state. The character sheet lives in a JSON file; runtime state lives in localStorage. That separation is clean, but it creates a gap: when a piece of the UI is supposed to reflect something from both sources simultaneously, you have to be deliberate about where the data comes from and when.
+The latest pass focused on those table-facing details.
 
-This came up when adding inventory descriptions to weapon and armor cards. The shortbow card on the Combat tab should show what the item actually does — but that description lives in the inventory system, which is conceptually separate from weapons. The solution was a shared helper function (`invDescHtml`) in the utilities layer that any panel could call, looking up an item by name in the live session inventory. It meant the weapon card and the inventory table are both reading from the same source, so editing the description in one place propagates automatically. Small pattern, but it changed how I thought about crossing the boundary between static data and state.
+## The turn tracker now understands Quickened and Slowed
 
-## Conditions That Actually Do Something
+Pathfinder's three-action economy is one of the system's defining rhythms, so the action tracker needs to be accurate at a glance.
 
-Ranked conditions — Enfeebled, Clumsy, Sickened and the rest — have levels, and those levels have mechanical consequences. Enfeebled 3 isn't just a label; it's a −3 status penalty to every Strength-based roll. Getting that to propagate correctly required restructuring how conditions were stored.
+Saske's "Actions This Turn" control now responds to conditions:
 
-Previously, conditions were stored as flat strings like `"Enfeebled 1"`. Adding a level selector meant splitting the data: the conditions list in the JSON now distinguishes between ranked conditions (with a `maxLevel`) and simple ones. The UI shows a number input that appears only when a ranked condition is selected. After adding, the string is reconstructed — `"Enfeebled 3"` — and fed into the existing system that computes per-skill penalty maps.
+- Normal: three actions and one reaction.
+- Quickened: a fourth action appears.
+- Slowed: the correct number of actions disappears.
+- Quickened and Slowed together: the tracker shows the combined result.
 
-The trickier part was making Enfeebled actually affect the Skills panel. The penalty computation runs in `applyConditionEffects`, populates a `skillPenMap` object, and stores it in a non-persisted `_condPenalties` field on the state object. Every skill renderer then reads from that map and applies red highlighting and an adjusted modifier if the map has an entry for that skill. The skills panel also re-renders automatically when conditions change, which required a carefully placed re-build call that only fires when the Skills tab is currently visible.
+This only applies to Saske's turn tracker. Haki's condition list can still show Slowed or Quickened as table information, but it does not change Saske's action selector.
 
-## Party Condition Tracking
+The mobile layout was adjusted at the same time. The action buttons now wrap more gracefully on narrow screens, and the Warden's Boon text was shortened so the important controls keep their space. The longer Warden's Boon explanation still exists as a hover tip.
 
-The Treat Condition feat introduced an interesting UI challenge: it applies to exactly three conditions, on up to five party members, with different downstream effects depending on who's affected. For Saske and Haki, changes pipe directly into the live condition system and affect stats immediately. For the other three party members, changes are tracked for reporting purposes only.
+## Haki is now part of the session report
 
-Rather than building a separate system, the solution was a 5×3 grid — members as rows, conditions as columns — with +/− buttons per cell. A single `setPartyCondition` function handles all five members but branches on whether the target is Saske or Haki, routing changes into `S.conditions` or `S.haki_conditions` respectively. The grid lives in the same card as the Battle Medicine cooldown tracker, keeping all the Medic Dedication workflow in one place.
+One of the main goals of the tracker is to make session notes easy to export. If something important changes during combat, the Copy Report button should become available and include that change.
 
-## The Invisible Description Layer
+Haki's hit points were not fully tied into that workflow before. Now Haki starts at full health by default, and changes to Haki's HP or temporary HP count as reportable session changes. If Haki takes damage, receives healing, gets temporary HP, gains a condition, or has other tracked state changes, the app treats that as part of the session story.
 
-Several features across the last few pushes share the same underlying pattern: information that exists in the data but shouldn't clutter the visual display. Feat descriptions, item effect notes, inventory hover text — all of these use the app's existing fixed-position tooltip system, which was originally built for stat tiles.
+The report trigger was also broadened beyond HP. It now watches more of the things that can matter after a session:
 
-What made this satisfying to implement is that the tooltip trigger is on the *container element*, not the clickable element inside it. A feat row shows a tooltip when you hover anywhere in the row, but the text inside still signals clickability via cursor and colour. It's a small UX distinction — hover for context, tap for action — that keeps the information accessible without filling the screen with it.
+- Saske's actions and reaction usage.
+- Warden's Boon.
+- Haki's HP, conditions, diseases, and barding.
+- Inventory changes and ammunition usage.
+- Disease tracking.
+- Party condition tracking.
+- Feat notes and custom item effects.
+- Battle Medicine cooldowns.
 
-## Localhost Caching Is Genuinely Annoying
+That makes Copy Report feel less like a hit point log and more like a full session summary.
 
-A mundane but persistent source of confusion: `npx serve` caches JavaScript files in memory. Replacing a file on disk while the server is running doesn't guarantee the server will serve the new version. The fix for `character.json` was adding `{ cache: 'no-cache' }` to the fetch call. The fix for JS files is simply stopping the server before replacing them. Neither is complicated, but both are easy to forget — and the symptom (the app behaving as if your changes don't exist) is confusing the first few times you encounter it.
+## Attack cards explain themselves
 
-## What's Next
+The attack cards now have hover explanations showing how the attack modifier is calculated. Instead of only seeing a final `+17`, you can hover and see where that number comes from: proficiency, ability modifier, item bonus, and any current condition penalty.
 
-The tracker has grown significantly from its original scope. What started as a simple HP and condition tracker now covers attack rolls with structured dice, a full medicine workflow, disease tracking, party condition management, and a knowledge layer for feats and item effects. The next interesting problem is probably making more of these systems talk to each other — surfacing item effects directly from the inventory, or connecting disease stages to conditions automatically.
+This matters because the app is not just a calculator. It is also a confidence tool. During a game, especially when conditions pile up, it helps to see why a number changed without digging through the character sheet.
+
+While doing that, the math language across the tracker was cleaned up. The app now avoids awkward text like `+ +4 DEX` and instead shows cleaner expressions like `+ 4 DEX`. It is a small wording change, but it makes the tracker feel calmer and more reliable.
+
+## Tooltips are less twitchy
+
+The attack tooltip had an annoying behavior: moving the mouse around inside the same attack card could make the tooltip appear and disappear. The issue was not the content of the tooltip, but how hover was detected. The app was reacting as though moving between parts inside the same card meant leaving and re-entering the hover area.
+
+That behavior is now fixed. Hovering an attack card feels stable, which makes the explanations much easier to use.
+
+## More changes are safer to display
+
+The tracker stores everything locally in the browser. There is no account system, no database, and no remote user input. Even so, some user-editable text can be rendered back into the page: item notes, disease names, feat descriptions, and similar fields.
+
+Those display paths now escape text before showing it. For a personal local tool, this is not the same risk profile as a public website, but it is still a good habit. The tracker should be resilient even when a note contains unusual characters.
+
+## The character data got a rules cleanup
+
+Saske's weapon damage data was corrected so the app's attack scoring better matches the actual character build. This is the sort of fix that is easy to miss because the interface can look right while the underlying numbers are slightly off.
+
+That reinforces one of the lessons from this project: the tracker is only as good as the relationship between the character data and the live interface. When those line up, the app becomes much easier to trust.
+
+## The bigger direction
+
+The tracker is moving from "a place to record things" toward "a table companion that notices what matters."
+
+The best changes in this session were not flashy. They were small pieces of friction removed:
+
+- A fourth action appears exactly when it should.
+- A report button activates when Haki takes damage.
+- A tooltip explains a number without making the screen noisy.
+- Mobile controls keep working when the tracker is squeezed.
+- The exported report better reflects what happened in play.
+
+That is the kind of polish that matters most for a personal game tool. It does not need to become a platform. It needs to be fast, readable, and honest about the current state of the character.

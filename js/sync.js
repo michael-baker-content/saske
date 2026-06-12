@@ -36,7 +36,7 @@ function syncButtonStates() {
   // ── Prey / actions ────────────────────────────────────────────────
   const preyInput = document.getElementById('prey-input');
   setDisabled('prey-hunt-btn',  !preyInput?.value?.trim());
-  const anyActionUsed = Object.values(S_.actions || {}).some(v => v);
+  const anyActionUsed = Object.entries(S_.actions || {}).some(([id, used]) => used && isActionAvailable(id));
   setDisabled('reset-turn-btn', !anyActionUsed);
 
   // ── Notes ─────────────────────────────────────────────────────────
@@ -46,12 +46,7 @@ function syncButtonStates() {
   setDisabled('notes-clear', !notes);
 
   // ── Session ───────────────────────────────────────────────────────
-  const isDefault = isDefaultHP
-    && !notes
-    && !(S_.inventory || []).some(i => (i.used || 0) > 0)
-    && !Object.keys(S_.bm_cooldowns || {}).length
-    && !S_.haki_conditions.length
-    && hp === hpMax;
+  const isDefault = !hasSessionChanges(notes);
   setDisabled('session-copy-btn',  isDefault);
   setDisabled('session-reset-btn', isDefault);
 
@@ -75,6 +70,75 @@ function syncButtonStates() {
   const medDirty = medHasTarget || medHasTier || medHasAction
     || medHasRoll || medAssurance;
   setDisabled('med-clear-btn', !medDirty);
+}
+
+function hasSessionChanges(notesOverride) {
+  if (!C) return false;
+
+  const hpMax = C.defenses.hp_max;
+  const hakiMax = C.companion.hp_max;
+  const notes = notesOverride ?? (S.notes || '').trim();
+
+  const saskeChanged = Math.max(0, S.hp ?? hpMax) !== hpMax
+    || Math.max(0, S.tmp_hp || 0) !== 0
+    || (S.conditions || []).length > 0
+    || !!S.prey
+    || Object.values(S.actions || {}).some(Boolean)
+    || !!S.warden_active;
+
+  const hakiChanged = Math.max(0, S.haki_hp ?? hakiMax) !== hakiMax
+    || Math.max(0, S.haki_tmp_hp || 0) !== 0
+    || (S.haki_conditions || []).length > 0
+    || (S.haki_diseases || []).length > 0
+    || S.haki_barding !== DEFAULT_STATE.haki_barding;
+
+  return saskeChanged
+    || hakiChanged
+    || !!notes
+    || inventoryChanged()
+    || (S.diseases || []).length > 0
+    || partyConditionsChanged()
+    || Object.values(S.feat_descriptions || {}).some(v => !!v)
+    || (S.item_effects || []).some(e => !!(e.name || e.source || e.description))
+    || Object.keys(S.bm_cooldowns || {}).length > 0;
+}
+
+function normalizeInventoryItem(item) {
+  return {
+    name: item.name || '',
+    bulk: item.bulk || '',
+    quantity: item.quantity ?? null,
+    description: item.description || '',
+    notes: item.notes || '',
+    used: item.used || 0,
+    ammo: item.ammo || false,
+    ammoPerBundle: item.ammo ? (item.ammoPerBundle ?? null) : null,
+  };
+}
+
+function defaultInventorySnapshot() {
+  return (C?.inventory || []).map(i => normalizeInventoryItem({
+    name: i.name,
+    bulk: i.bulk,
+    quantity: i.quantity ?? 1,
+    description: i.description ?? '',
+    notes: i.notes ?? '',
+    used: 0,
+    ammo: i.ammo ?? false,
+    ammoPerBundle: i.ammoPerBundle ?? undefined,
+  }));
+}
+
+function inventoryChanged() {
+  const current = (S.inventory || []).map(normalizeInventoryItem);
+  const initial = defaultInventorySnapshot();
+  return JSON.stringify(current) !== JSON.stringify(initial);
+}
+
+function partyConditionsChanged() {
+  return Object.values(S.party_conditions || {}).some(member =>
+    Object.values(member || {}).some(value => (value || 0) > 0)
+  );
 }
 
 function setDisabled(id, disabled) {
@@ -188,10 +252,41 @@ function syncPrey() {
 }
 
 function syncActions() {
-  Object.entries(S.actions).forEach(([id, used]) => {
+  const budget = saskeActionBudget();
+  let changed = false;
+
+  ['a1','a2','a3','a4','r1'].forEach(id => {
+    if (!(id in S.actions)) {
+      S.actions[id] = false;
+      changed = true;
+    }
+
+    const available = isActionAvailable(id);
+    if (!available && S.actions[id]) {
+      S.actions[id] = false;
+      changed = true;
+    }
+
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('used', used);
+    if (!el) return;
+    const used = !!S.actions[id];
+    el.classList.toggle('used', used);
+    el.classList.toggle('unavailable', !available);
+    el.setAttribute('aria-disabled', available ? 'false' : 'true');
   });
+
+  const note = document.getElementById('action-budget-note');
+  if (note) {
+    const parts = [];
+    if (budget.quickened) parts.push('Quickened + 1');
+    if (budget.slowed) parts.push(`Slowed - ${budget.slowed}`);
+    note.textContent = parts.length
+      ? `${parts.join(', ')}: ${budget.total} action${budget.total === 1 ? '' : 's'} available`
+      : '';
+    note.classList.toggle('visible', parts.length > 0);
+  }
+
+  if (changed) saveState();
   syncButtonStates?.();
 }
 
@@ -230,10 +325,9 @@ function syncCounters() {
 
 
 function toggleHakiBarding() {
-  S.haki_barding = !S.haki_barding;
-  saveState();
-  syncHakiSkills();
-  syncHakiBardingCard();
+  commit(() => {
+    S.haki_barding = !S.haki_barding;
+  }, [syncHakiSkills, syncHakiBardingCard]);
 }
 
 function syncHakiBardingCard() {
@@ -254,7 +348,11 @@ function syncHakiBardingCard() {
     <div class="armor-stats">
       <div class="armor-stat-group">
         <div class="armor-tile has-tooltip"
-          data-tooltip="AC = 10 base + ${acProf} prof (${co.ac_proficiency}) + ${effDex} DEX${dex > bard.dex_cap ? ' (capped from +' + dex + ')' : ''} + ${bard.ac_bonus} item bonus">
+          data-tooltip="${escapeAttr(dcTooltip('AC', computedAC, '10 base', [
+            mathTerm(acProf, 'prof (' + co.ac_proficiency + ')'),
+            mathTerm(effDex, 'DEX' + (dex > bard.dex_cap ? ' (capped)' : '')),
+            mathTerm(bard.ac_bonus, 'item')
+          ]))}">
           <div class="stat-val" style="font-size:20px">${computedAC}</div>
           <div class="stat-label">AC</div>
         </div>
@@ -263,7 +361,7 @@ function syncHakiBardingCard() {
           <div class="stat-label">Item Bonus</div>
         </div>
         <div class="armor-tile has-tooltip"
-          data-tooltip="Max DEX bonus that applies to AC${dex > bard.dex_cap ? '. DEX +' + dex + ' capped to +' + bard.dex_cap : '. DEX +' + dex + ' within cap'}">
+          data-tooltip="Max DEX bonus that applies to AC${dex > bard.dex_cap ? '. DEX ' + dex + ' capped to ' + bard.dex_cap : '. DEX ' + dex + ' within cap'}">
           <div class="stat-val" style="font-size:20px${dex > bard.dex_cap ? ';color:var(--amber)' : ''}">+${bard.dex_cap}</div>
           <div class="stat-label">Dex Cap</div>
         </div>
@@ -310,10 +408,10 @@ function syncHakiSkills() {
     const effMod   = s.modifier + (bardingOn ? bp : 0);
     const tipParts = [];
     if (pb > 0) tipParts.push(profNum + ' prof (' + s.proficiency + ')');
-    tipParts.push((attrVal >= 0 ? '+' : '') + attrVal + ' ' + attrName);
-    if (bardingOn && bp !== 0) tipParts.push(bp + ' barding');
-    const tip   = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (effMod >= 0 ? '+' : '') + effMod;
-    const skillPen = (S._condPenalties?.skills?.[s.name] || 0);
+    tipParts.push(mathTerm(attrVal, attrName));
+    if (bardingOn && bp !== 0) tipParts.push(mathTerm(bp, 'barding'));
+    const tip   = s.name + ' = ' + tipParts.join(' ') + ' = ' + fmtMod(effMod);
+    const skillPen = (condPenalties?.skills?.[s.name] || 0);
     const effectiveMod = effMod - skillPen;
     const mod   = (effectiveMod >= 0 ? '+' : '') + effectiveMod;
     const isPenalised = (bardingOn && bp !== 0) || skillPen > 0;
@@ -467,6 +565,7 @@ function applyConditionEffects() {
     if (el) {
       el.textContent = (effectiveAtk >= 0 ? '+' : '') + effectiveAtk;
       el.style.color = atkPen > 0 ? 'var(--red-b)' : '';
+      el.closest('.weapon-card')?.setAttribute('data-tooltip', attackTooltip(w, 'player', atkPen));
     }
   });
 
@@ -495,10 +594,11 @@ function applyConditionEffects() {
     if (pen > 0) skillPenMap[s.name] = pen;
   });
 
-  S._condPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, perc: percPen, atk: atkPen, skills: skillPenMap };
+  condPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, perc: percPen, atk: atkPen, skills: skillPenMap };
 
   // Re-render skills if on skills tab (penalties affect displayed values)
   if (typeof currentTab !== 'undefined' && currentTab === 2) buildSkills?.();
+  syncActions?.();
 }
 // ─── Haki Condition Effect Engine ────────────────────────────────
 function applyHakiConditionEffects() {
@@ -557,10 +657,11 @@ function applyHakiConditionEffects() {
     const eff = a.attack - atkPen;
     el.textContent = (eff >= 0 ? '+' : '') + eff;
     el.style.color = atkPen > 0 ? 'var(--red-b)' : '';
+    el.closest('.weapon-card')?.setAttribute('data-tooltip', attackTooltip(a, 'companion', atkPen));
   });
 
   // Store for modal use
-  S._hakiCondPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, atk: atkPen };
+  hakiCondPenalties = { ac: acPen, reflex: reflexPen, fort: fortPen, will: willPen, atk: atkPen };
 
   // Condition effects summary
   const summEl = document.getElementById('haki-cond-effects-summary');
@@ -581,6 +682,7 @@ function syncNotesButtons() {
   const hasText = !!(notesEl?.value?.trim());
   setDisabled('notes-save',  !hasText);
   setDisabled('notes-clear', !hasText);
+  syncButtonStates();
 }
 
 // ── Disease tracker ───────────────────────────────────────────────
@@ -597,7 +699,7 @@ function syncDiseases() {
     const timerSet  = d.turnsRemaining !== null && d.turnsRemaining !== undefined;
     return '<div class="disease-row">'
       + '<div class="disease-row-main">'
-      +   '<span class="disease-name">' + d.name + '</span>'
+      +   '<span class="disease-name">' + escapeHtml(d.name) + '</span>'
       +   '<div class="disease-controls">'
       +     '<span class="disease-label">Stage</span>'
       +     '<button class="bm-adj-btn" ontouchstart="" onclick="diseaseUpdate(' + idx + ',\'stage\',Math.max(1,' + (d.stage-1) + '))" '
@@ -635,7 +737,7 @@ function syncHakiDiseases() {
     const timerSet = d.turnsRemaining !== null && d.turnsRemaining !== undefined;
     return '<div class="disease-row">'
       + '<div class="disease-row-main">'
-      +   '<span class="disease-name">' + d.name + '</span>'
+      +   '<span class="disease-name">' + escapeHtml(d.name) + '</span>'
       +   '<div class="disease-controls">'
       +     '<span class="disease-label">Stage</span>'
       +     '<button class="bm-adj-btn" ontouchstart="" onclick="hakiDiseaseUpdate(' + idx + ',\'stage\',Math.max(1,' + (d.stage-1) + '))" ' + (d.stage <= 1 ? 'disabled' : '') + '>−</button>'
@@ -695,10 +797,10 @@ function syncItemEffects() {
   }
   el.innerHTML = effects.map((e, idx) => {
     const tip = e.description || 'Tap name to add description';
-    return '<div class="ie-row has-tooltip' + (e.description ? ' ie-described' : '') + '" data-tooltip="' + tip.replace(/"/g, '&quot;') + '">'
+    return '<div class="ie-row has-tooltip' + (e.description ? ' ie-described' : '') + '" data-tooltip="' + escapeAttr(tip) + '">'
       + '<div class="ie-row-main">'
-      +   '<button class="ie-name-btn" ontouchstart="" onclick="openIEModal(' + idx + ')">' + e.name + '</button>'
-      +   (e.source ? '<span class="ie-source">' + e.source + '</span>' : '')
+      +   '<button class="ie-name-btn" ontouchstart="" onclick="openIEModal(' + idx + ')">' + escapeHtml(e.name) + '</button>'
+      +   (e.source ? '<span class="ie-source">' + escapeHtml(e.source) + '</span>' : '')
       + '</div>'
       + '<button class="bm-remove-btn" ontouchstart="" onclick="ieRemove(' + idx + ')" style="padding:0 4px">✕</button>'
       + '</div>';

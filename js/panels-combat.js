@@ -43,17 +43,26 @@ function buildCombat() {
         <div class="stats-saves-group">
           <div class="card-title">Core Stats</div>
           <div class="stat-grid">
-            <div class="stat-box has-tooltip" data-tooltip="AC = 10 base + ${profBonus(C.defenses.ac_proficiency, C.meta.level)} prof (${C.defenses.ac_proficiency}) + ${Math.min(C.attributes.dex, C.equipped_armor?.dex_cap ?? 99)} DEX${C.attributes.dex > (C.equipped_armor?.dex_cap ?? 99) ? ' (capped)' : ''} + ${C.equipped_armor?.ac_bonus ?? 0} item">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(dcTooltip('AC', C.defenses.ac, '10 base', [
+              mathTerm(profBonus(C.defenses.ac_proficiency, C.meta.level), 'prof (' + C.defenses.ac_proficiency + ')'),
+              mathTerm(Math.min(C.attributes.dex, C.equipped_armor?.dex_cap ?? 99), 'DEX' + (C.attributes.dex > (C.equipped_armor?.dex_cap ?? 99) ? ' (capped)' : '')),
+              mathTerm(C.equipped_armor?.ac_bonus ?? 0, 'item')
+            ]))}">
               <div class="stat-val" id="live-ac">${C.defenses.ac}</div>
               <div class="stat-label">AC</div>
               <div class="stat-stars">${profToStars(C.defenses.ac_proficiency)}</div>
             </div>
-            <div class="stat-box has-tooltip" data-tooltip="Perception = ${profBonus(C.perception.proficiency, C.meta.level)} prof (${C.perception.proficiency}) + ${C.attributes[C.perception.key_attribute]} WIS = ${C.perception.modifier}">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(statTooltip('Perception', C.perception.modifier, profBonus(C.perception.proficiency, C.meta.level) + ' prof (' + C.perception.proficiency + ')', [
+              mathTerm(C.attributes[C.perception.key_attribute], 'WIS')
+            ]))}">
               <div class="stat-val" id="live-perc">+${C.perception.modifier}</div>
               <div class="stat-label">Perception</div>
               <div class="stat-stars">${profToStars(C.perception.proficiency)}</div>
             </div>
-            <div class="stat-box has-tooltip" data-tooltip="Class DC = 10 base + ${profBonus(C.defenses.class_dc_proficiency, C.meta.level)} prof (${C.defenses.class_dc_proficiency}) + ${C.attributes[C.defenses.class_dc_key_attribute]} WIS = ${C.defenses.class_dc}">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(dcTooltip('Class DC', C.defenses.class_dc, '10 base', [
+              mathTerm(profBonus(C.defenses.class_dc_proficiency, C.meta.level), 'prof (' + C.defenses.class_dc_proficiency + ')'),
+              mathTerm(C.attributes[C.defenses.class_dc_key_attribute], 'WIS')
+            ]))}">
               <div class="stat-val">${C.defenses.class_dc}</div>
               <div class="stat-label">Class DC</div>
               <div class="stat-stars">${profToStars(C.defenses.class_dc_proficiency)}</div>
@@ -63,17 +72,23 @@ function buildCombat() {
         <div class="stats-saves-group">
           <div class="card-title">Saving Throws</div>
           <div class="stat-grid">
-            <div class="stat-box has-tooltip" data-tooltip="Fortitude = ${profBonus(sv.fortitude.proficiency, C.meta.level)} prof (${sv.fortitude.proficiency}) + ${C.attributes[sv.fortitude.key_attribute]} CON = ${sv.fortitude.modifier}">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(statTooltip('Fortitude', sv.fortitude.modifier, profBonus(sv.fortitude.proficiency, C.meta.level) + ' prof (' + sv.fortitude.proficiency + ')', [
+              mathTerm(C.attributes[sv.fortitude.key_attribute], 'CON')
+            ]))}">
               <div class="stat-val" id="live-fort">+${sv.fortitude.modifier}</div>
               <div class="stat-label">Fortitude</div>
               <div class="stat-stars">${profToStars(sv.fortitude.proficiency)}</div>
             </div>
-            <div class="stat-box has-tooltip" data-tooltip="Reflex = ${profBonus(sv.reflex.proficiency, C.meta.level)} prof (${sv.reflex.proficiency}) + ${C.attributes[sv.reflex.key_attribute]} DEX = ${sv.reflex.modifier}">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(statTooltip('Reflex', sv.reflex.modifier, profBonus(sv.reflex.proficiency, C.meta.level) + ' prof (' + sv.reflex.proficiency + ')', [
+              mathTerm(C.attributes[sv.reflex.key_attribute], 'DEX')
+            ]))}">
               <div class="stat-val" id="live-reflex">+${sv.reflex.modifier}</div>
               <div class="stat-label">Reflex</div>
               <div class="stat-stars">${profToStars(sv.reflex.proficiency)}</div>
             </div>
-            <div class="stat-box has-tooltip" data-tooltip="Will = ${profBonus(sv.will.proficiency, C.meta.level)} prof (${sv.will.proficiency}) + ${C.attributes[sv.will.key_attribute]} WIS = ${sv.will.modifier}">
+            <div class="stat-box has-tooltip" data-tooltip="${escapeAttr(statTooltip('Will', sv.will.modifier, profBonus(sv.will.proficiency, C.meta.level) + ' prof (' + sv.will.proficiency + ')', [
+              mathTerm(C.attributes[sv.will.key_attribute], 'WIS')
+            ]))}">
               <div class="stat-val" id="live-will">+${sv.will.modifier}</div>
               <div class="stat-label">Will</div>
               <div class="stat-stars">${profToStars(sv.will.proficiency)}</div>
@@ -98,23 +113,27 @@ function buildCombat() {
 
     <div class="card">
       <div class="card-title">Actions This Turn</div>
-      <div class="row" style="margin-bottom:8px">
-        <div class="action-pip" id="a1" ontouchstart="" onclick="toggleAction('a1')">◆</div>
-        <div class="action-pip" id="a2" ontouchstart="" onclick="toggleAction('a2')">◆</div>
-        <div class="action-pip" id="a3" ontouchstart="" onclick="toggleAction('a3')">◆</div>
-        <div class="action-pip react" id="r1" ontouchstart="" onclick="toggleAction('r1')">↺</div>
-        <button class="btn sm" id="reset-turn-btn" ontouchstart="" onclick="resetActions()" style="margin-left:auto">Reset Turn</button>
+      <div class="actions-card-main">
+        <div class="action-pips" aria-label="Actions this turn">
+          <div class="action-pip" id="a1" ontouchstart="" onclick="toggleAction('a1')" title="Action 1">◆</div>
+          <div class="action-pip" id="a2" ontouchstart="" onclick="toggleAction('a2')" title="Action 2">◆</div>
+          <div class="action-pip" id="a3" ontouchstart="" onclick="toggleAction('a3')" title="Action 3">◆</div>
+          <div class="action-pip quickened" id="a4" ontouchstart="" onclick="toggleAction('a4')" title="Quickened action">◆</div>
+          <div class="action-pip react" id="r1" ontouchstart="" onclick="toggleAction('r1')" title="Reaction">↺</div>
+        </div>
+        <button class="btn sm" id="reset-turn-btn" ontouchstart="" onclick="resetActions()">Reset Turn</button>
       </div>
-      <div class="row">
+      <div class="action-budget-note" id="action-budget-note"></div>
+      <div class="row warden-row">
         <div class="tog green" id="warden-tog" ontouchstart="" onclick="toggleWarden()"><div class="tog-knob"></div></div>
-        <span class="tog-label">Warden's Boon active — ally gains Precision until their next turn</span>
+        <span class="tog-label has-tooltip" data-tooltip="Warden's Boon active: ally gains Precision until their next turn">Warden's Boon active</span>
       </div>
     </div>
 
     <div class="card card-full">
       <div class="card-title">Weapons</div>
       ${C.weapons.map((w,i) => `
-      <div class="weapon-card clickable" ontouchstart="" onclick="openModal(${i},'player')">
+      <div class="weapon-card clickable has-tooltip" data-tooltip="${escapeAttr(attackTooltip(w, 'player'))}" ontouchstart="" onclick="openModal(${i},'player')">
         <div class="weapon-row">
           <div class="weapon-name">${w.name}</div>
           <span class="tap-hint">tap to roll ▸</span>
@@ -164,9 +183,9 @@ function buildCompanion() {
     const effMod   = s.modifier + (bardingOn ? bp : 0);
     const tipParts = [];
     if (pb > 0) tipParts.push(profNum + ' prof (' + s.proficiency + ')');
-    tipParts.push((attrVal >= 0 ? '+' : '') + attrVal + ' ' + attrName);
-    if (bardingOn && bp !== 0) tipParts.push(bp + ' barding');
-    const tip   = s.name + ' = ' + tipParts.join(' + ') + ' = ' + (effMod >= 0 ? '+' : '') + effMod;
+    tipParts.push(mathTerm(attrVal, attrName));
+    if (bardingOn && bp !== 0) tipParts.push(mathTerm(bp, 'barding'));
+    const tip   = s.name + ' = ' + tipParts.join(' ') + ' = ' + fmtMod(effMod);
     const mod   = (effMod >= 0 ? '+' : '') + effMod;
     const style = (bardingOn && bp !== 0) ? ' style="color:var(--red-b)"' : '';
     return '<div class="skill-row has-tooltip" data-tooltip="' + tip + '">'
@@ -226,7 +245,11 @@ function buildCompanion() {
                 const bard = co.equipped_barding;
                 const acProf = profBonus(co.ac_proficiency, C.meta.level);
                 const effDex = bard ? Math.min(at.dex, bard.dex_cap) : at.dex;
-                return 'AC = 10 base + ' + acProf + ' prof (' + co.ac_proficiency + ') + ' + effDex + ' DEX' + (at.dex > (bard?.dex_cap??99) ? ' (capped)' : '') + ' + ' + (bard?.ac_bonus??0) + ' item';
+                return escapeAttr(dcTooltip('AC', 10 + acProf + effDex + (bard?.ac_bonus??0), '10 base', [
+                  mathTerm(acProf, 'prof (' + co.ac_proficiency + ')'),
+                  mathTerm(effDex, 'DEX' + (at.dex > (bard?.dex_cap??99) ? ' (capped)' : '')),
+                  mathTerm(bard?.ac_bonus??0, 'item')
+                ]));
               })()}">
               <div class="stat-val" id="haki-live-ac">${(()=>{
                 const bard = co.equipped_barding;
@@ -238,7 +261,9 @@ function buildCompanion() {
               <div class="stat-stars">${profToStars(co.ac_proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Perception = ${profBonus(co.perception.proficiency, C.meta.level)} prof (${co.perception.proficiency}) + ${at[co.perception.key_attribute]} WIS = ${fmtMod(co.perception.modifier)}">
+              data-tooltip="${escapeAttr(statTooltip('Perception', co.perception.modifier, profBonus(co.perception.proficiency, C.meta.level) + ' prof (' + co.perception.proficiency + ')', [
+                mathTerm(at[co.perception.key_attribute], 'WIS')
+              ]))}">
               <div class="stat-val" id="haki-live-perc">${fmtMod(co.perception.modifier)}</div>
               <div class="stat-label">Perception</div>
               <div class="stat-stars">${profToStars(co.perception.proficiency)}</div>
@@ -259,19 +284,25 @@ function buildCompanion() {
           <div class="card-title">Saving Throws</div>
           <div class="stat-grid">
             <div class="stat-box has-tooltip"
-              data-tooltip="Fortitude = ${(C.meta.level + (PROF_MAP[sv.fortitude.proficiency]||0))} prof (${sv.fortitude.proficiency}) + ${at.con} CON = ${fmtMod(sv.fortitude.modifier)}">
+              data-tooltip="${escapeAttr(statTooltip('Fortitude', sv.fortitude.modifier, (C.meta.level + (PROF_MAP[sv.fortitude.proficiency]||0)) + ' prof (' + sv.fortitude.proficiency + ')', [
+                mathTerm(at.con, 'CON')
+              ]))}">
               <div class="stat-val" id="haki-live-fort">${fmtMod(sv.fortitude.modifier)}</div>
               <div class="stat-label">Fortitude</div>
               <div class="stat-stars">${profToStars(sv.fortitude.proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Reflex = ${(C.meta.level + (PROF_MAP[sv.reflex.proficiency]||0))} prof (${sv.reflex.proficiency}) + ${at.dex} DEX = ${fmtMod(sv.reflex.modifier)}">
+              data-tooltip="${escapeAttr(statTooltip('Reflex', sv.reflex.modifier, (C.meta.level + (PROF_MAP[sv.reflex.proficiency]||0)) + ' prof (' + sv.reflex.proficiency + ')', [
+                mathTerm(at.dex, 'DEX')
+              ]))}">
               <div class="stat-val" id="haki-live-reflex">${fmtMod(sv.reflex.modifier)}</div>
               <div class="stat-label">Reflex</div>
               <div class="stat-stars">${profToStars(sv.reflex.proficiency)}</div>
             </div>
             <div class="stat-box has-tooltip"
-              data-tooltip="Will = ${(C.meta.level + (PROF_MAP[sv.will.proficiency]||0))} prof (${sv.will.proficiency}) + ${at.wis} WIS = ${fmtMod(sv.will.modifier)}">
+              data-tooltip="${escapeAttr(statTooltip('Will', sv.will.modifier, (C.meta.level + (PROF_MAP[sv.will.proficiency]||0)) + ' prof (' + sv.will.proficiency + ')', [
+                mathTerm(at.wis, 'WIS')
+              ]))}">
               <div class="stat-val" id="haki-live-will">${fmtMod(sv.will.modifier)}</div>
               <div class="stat-label">Will</div>
               <div class="stat-stars">${profToStars(sv.will.proficiency)}</div>
@@ -287,7 +318,7 @@ function buildCompanion() {
       <div class="card">
         <div class="card-title">Attacks</div>
         ${co.attacks.map((a,i) => `
-        <div class="weapon-card clickable" ontouchstart="" onclick="openModal(${i},'companion')">
+        <div class="weapon-card clickable has-tooltip" data-tooltip="${escapeAttr(attackTooltip(a, 'companion'))}" ontouchstart="" onclick="openModal(${i},'companion')">
           <div class="weapon-row">
             <div class="weapon-name">${a.name}${a.traits?.length ? ' <span style="font-size:10px;color:var(--text3)">(' + a.traits.join(', ') + ')</span>' : ''}</div>
             <span class="tap-hint">tap to roll ▸</span>
@@ -346,4 +377,3 @@ function buildCompanion() {
   buildConditionSelect('haki-cond-select');
   syncHakiBardingCard();
 }
-

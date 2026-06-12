@@ -59,7 +59,7 @@
     {
       "name": "+1 Striking Shortbow",
       "attack": 17,
-      "damage_str": "2d6+3 P",
+      "damage_str": "2d6+2 P",
       "traits": [
         "Deadly d10",
         "Range 60 ft.",
@@ -74,8 +74,8 @@
           "label": "2d6"
         }
       ],
-      "damage_bonus": 3,
-      "damage_bonus_label": "+1 item, +2 spec",
+      "damage_bonus": 2,
+      "damage_bonus_label": "+2 spec",
       "crit_additions": [
         {
           "dice": 1,
@@ -89,7 +89,7 @@
     {
       "name": "+1 Striking Shortsword",
       "attack": 17,
-      "damage_str": "2d6+3 P/S",
+      "damage_str": "2d6+2 P/S",
       "traits": [
         "Agile",
         "Finesse",
@@ -106,13 +106,13 @@
           "label": "2d6"
         }
       ],
-      "damage_bonus": 3,
-      "damage_bonus_label": "+1 item, +2 spec"
+      "damage_bonus": 2,
+      "damage_bonus_label": "+2 spec"
     },
     {
       "name": "+1 Striking Sling",
       "attack": 17,
-      "damage_str": "2d6+3 B",
+      "damage_str": "2d6+2 B",
       "traits": [
         "Propulsive",
         "Reload 1"
@@ -126,8 +126,8 @@
           "label": "2d6"
         }
       ],
-      "damage_bonus": 3,
-      "damage_bonus_label": "+1 item, +2 spec"
+      "damage_bonus": 2,
+      "damage_bonus_label": "+2 spec"
     }
   ],
   "skills": [

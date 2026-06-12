@@ -383,3 +383,38 @@ input[type=number] {
 }
 .inv-td-bulk { color: var(--text2); }
 .inv-td-name { padding-left: 2px; }
+
+@media (pointer: coarse) {
+  .inv-input,
+  .inv-name-btn,
+  .inv-del-btn,
+  .med-d20-clear {
+    min-height: 40px;
+  }
+  .inv-name-btn,
+  .inv-del-btn,
+  .med-d20-clear {
+    min-width: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .inv-name-btn {
+    justify-content: flex-start;
+  }
+  .inv-del-btn,
+  .med-d20-clear {
+    justify-content: center;
+  }
+  .inv-td {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .counter-row {
+    align-items: stretch;
+    gap: 8px;
+  }
+  .counter-controls {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

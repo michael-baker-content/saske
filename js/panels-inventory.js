@@ -130,17 +130,14 @@ function invSaveEdit() {
     item.ammoPerBundle = undefined;
     item.used = 0;
   }
-  saveState();
+  commit(() => {}, [syncInventory]);
   invCloseModalDirect();
-  syncInventory();
 }
 
 function invDeleteEdit() {
   if (invEditIdx === null) return;
-  S.inventory.splice(invEditIdx, 1);
-  saveState();
+  commit(() => { S.inventory.splice(invEditIdx, 1); }, [syncInventory]);
   invCloseModalDirect();
-  syncInventory();
 }
 
 function invCloseModal(e) {
@@ -171,7 +168,11 @@ function syncArmor() {
     ${invDescHtml(arm.name)}
     <div class="armor-stats">
       <div class="armor-stat-group">
-        <div class="armor-tile has-tooltip" data-tooltip="AC = 10 base + ${acProf} prof (${C.defenses.ac_proficiency}) + ${effDex} DEX${dex > arm.dex_cap ? ' (capped from +' + dex + ')' : ''} + ${arm.ac_bonus} item bonus">
+        <div class="armor-tile has-tooltip" data-tooltip="${escapeAttr(dcTooltip('AC', computedAC, '10 base', [
+          mathTerm(acProf, 'prof (' + C.defenses.ac_proficiency + ')'),
+          mathTerm(effDex, 'DEX' + (dex > arm.dex_cap ? ' (capped)' : '')),
+          mathTerm(arm.ac_bonus, 'item')
+        ]))}">
           <div class="stat-val" style="font-size:20px">${computedAC}</div>
           <div class="stat-label">AC</div>
         </div>
@@ -179,7 +180,7 @@ function syncArmor() {
           <div class="stat-val" style="font-size:20px">+${arm.ac_bonus}</div>
           <div class="stat-label">Item Bonus</div>
         </div>
-        <div class="armor-tile has-tooltip" data-tooltip="Maximum DEX bonus that can be applied to AC${dex > arm.dex_cap ? '. Your DEX +' + dex + ' is capped at +' + arm.dex_cap : '. Your DEX +' + dex + ' fits within cap'}">
+        <div class="armor-tile has-tooltip" data-tooltip="Maximum DEX bonus that can be applied to AC${dex > arm.dex_cap ? '. Your DEX ' + dex + ' is capped at ' + arm.dex_cap : '. Your DEX ' + dex + ' fits within cap'}">
           <div class="stat-val" style="font-size:20px${dex > arm.dex_cap ? ';color:var(--amber)' : ''}">+${arm.dex_cap}</div>
           <div class="stat-label">Dex Cap</div>
         </div>
@@ -210,11 +211,14 @@ function syncInventory() {
         const qtyDisplay = qty != null ? String(qty) : '—';
         const bulk  = calcBulk(item.bulk, qty ?? 1);
         const ammoTag = item.ammo ? '<span class="inv-ammo-tag">ammo</span>' : '';
+        const itemName = escapeHtml(item.name);
+        const itemNotes = escapeHtml(item.notes || '');
+        const itemTooltip = escapeAttr(item.description || item.name);
         return '<tr class="inv-tr">'
              + '<td class="inv-td inv-td-name">'
-             +   '<button class="inv-name-btn has-tooltip" data-tooltip="' + (item.description || item.name) + '" ontouchstart="" onclick="invOpenModal(' + idx + ')">' + item.name + '</button>'
+             +   '<button class="inv-name-btn has-tooltip" data-tooltip="' + itemTooltip + '" ontouchstart="" onclick="invOpenModal(' + idx + ')">' + itemName + '</button>'
              +   ammoTag
-             +   (item.notes ? '<div class="inv-item-notes">' + item.notes + '</div>' : '')
+             +   (item.notes ? '<div class="inv-item-notes">' + itemNotes + '</div>' : '')
              + '</td>'
              + '<td class="inv-td inv-td-qty">' + qtyDisplay + '</td>'
              + '<td class="inv-td inv-td-bulk">' + bulk + '</td>'
@@ -247,9 +251,10 @@ function syncInventory() {
         const remaining  = totalShots - usedShots;
         const atMax      = usedShots === 0;
         const atZero     = remaining === 0;
+        const itemName   = escapeHtml(item.name);
         return '<div class="counter-row">'
              + '<div>'
-             + '<span>' + item.name + '</span>'
+             + '<span>' + itemName + '</span>'
              + '<span style="font-size:10px;color:var(--text3)"> ' + remaining + ' / ' + totalShots + ' (' + item.quantity + ' bundles × ' + perBundle + ')</span>'
              + '</div>'
              + '<div class="counter-controls">'
@@ -267,6 +272,7 @@ function invAddItem() {
   const name   = document.getElementById('inv-new-name')?.value.trim();
   const bulk   = document.getElementById('inv-new-bulk')?.value.trim();
   const qtyRaw = document.getElementById('inv-new-qty')?.value.trim();
+  const desc   = document.getElementById('inv-new-desc')?.value.trim();
   const notes  = document.getElementById('inv-new-notes')?.value.trim();
   const isAmmo = document.getElementById('inv-new-ammo-tog')?.classList.contains('on');
   const perRaw = document.getElementById('inv-new-ammo-per')?.value.trim();
@@ -277,8 +283,7 @@ function invAddItem() {
   const quantity = qtyRaw ? parseInt(qtyRaw) : null;
   const item = { name, bulk, quantity, description: desc || '', notes: notes || '', used: 0, ammo: isAmmo };
   if (isAmmo) item.ammoPerBundle = perRaw ? parseInt(perRaw) : 1;
-  S.inventory.push(item);
-  saveState();
+  commit(() => { S.inventory.push(item); }, [syncInventory]);
 
   ['inv-new-name','inv-new-bulk','inv-new-qty','inv-new-desc','inv-new-notes','inv-new-ammo-per'].forEach(id => {
     const el = document.getElementById(id);
@@ -290,13 +295,10 @@ function invAddItem() {
   if (ammoTog) ammoTog.classList.remove('on');
   if (ammoFields) ammoFields.style.display = 'none';
   document.getElementById('inv-new-name')?.focus();
-  syncInventory();
 }
 
 function invRemoveItem(idx) {
-  S.inventory.splice(idx, 1);
-  saveState();
-  syncInventory();
+  commit(() => { S.inventory.splice(idx, 1); }, [syncInventory]);
 }
 
 function invUseItem(idx, delta) {
@@ -305,16 +307,11 @@ function invUseItem(idx, delta) {
   const maxUsed = item.ammo
     ? (item.quantity ?? 0) * (item.ammoPerBundle ?? 1)
     : (item.quantity ?? 0);
-  item.used = Math.max(0, Math.min(maxUsed, (item.used ?? 0) + delta));
-  saveState();
-  syncInventory();
+  commit(() => { item.used = Math.max(0, Math.min(maxUsed, (item.used ?? 0) + delta)); }, [syncInventory]);
 }
 
 function invResetItem(idx) {
   const item = S.inventory[idx];
   if (!item) return;
-  item.used = 0;
-  saveState();
-  syncInventory();
+  commit(() => { item.used = 0; }, [syncInventory]);
 }
-

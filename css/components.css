@@ -36,15 +36,57 @@
 .text-in:focus { outline: 2px solid var(--blue-dim); outline-offset: 1px; }
 
 /* ── Actions ── */
+.actions-card-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.action-pips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
 .action-pip {
   width: 36px; height: 36px; border-radius: 50%;
   border: 2px solid var(--border2); background: var(--bg3);
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; color: var(--text3); cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s; user-select: none;
+  flex: 0 0 auto;
 }
 .action-pip.used { background: var(--blue-muted); border-color: var(--blue); color: var(--blue); }
 .action-pip.react.used { background: var(--bg4); border-color: var(--blue); color: var(--blue); }
+.action-pip.quickened {
+  border-style: dashed;
+  color: var(--amber);
+}
+.action-pip.quickened.used {
+  border-color: var(--amber);
+  background: rgba(197, 138, 64, 0.18);
+  color: var(--amber);
+}
+.action-pip.unavailable {
+  display: none;
+}
+.action-budget-note {
+  display: none;
+  margin: -1px 0 8px;
+  font-size: 11px;
+  color: var(--amber);
+  line-height: 1.35;
+}
+.action-budget-note.visible { display: block; }
+.warden-row {
+  min-width: 0;
+}
+.warden-row .tog-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 
 /* ── Toggle ── */
 .tog {
@@ -252,3 +294,51 @@
 .ie-add-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
 .ie-add-fields { display: flex; gap: 4px; flex: 1; min-width: 0; }
 .ie-add-fields .text-in { flex: 1; min-width: 0; }
+
+@media (pointer: coarse) {
+  .action-pip {
+    width: 44px;
+    height: 44px;
+  }
+  .weapon-card.clickable,
+  .feat-row,
+  .ie-row {
+    min-height: 44px;
+  }
+  .cond-badge {
+    min-height: 36px;
+    padding-right: 4px;
+  }
+  .cond-x {
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .disease-row-main,
+  .disease-row-timer {
+    flex-wrap: wrap;
+  }
+  .disease-controls,
+  .disease-tick-btns {
+    gap: 5px;
+  }
+  .disease-timer-input {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 380px) {
+  .actions-card-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .action-pips {
+    justify-content: space-between;
+    width: 100%;
+  }
+  #reset-turn-btn {
+    width: 100%;
+  }
+}
